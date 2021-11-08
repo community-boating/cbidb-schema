@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import { parse } from 'csv';
-import { Row } from './index'
+import { Row, PK } from './index'
 
-export default () => {
+export const readColumns = () => {
 	return new Promise<Row[]>((resolve, reject) => {
 		const parser = parse({delimiter: ','}, function(err, data){
 			resolve(data.map(row => ({
@@ -15,5 +15,18 @@ export default () => {
 		});
 		
 		fs.createReadStream('data/table-columns.csv').pipe(parser);
+	})
+}
+
+export const readPKs = () => {
+	return new Promise<PK[]>((resolve, reject) => {
+		const parser = parse({delimiter: ','}, function(err, data){
+			resolve(data.map(row => ({
+				tableName: row[0],
+				columnName: row[1]
+			})))
+		});
+		
+		fs.createReadStream('data/pks.csv').pipe(parser);
 	})
 }

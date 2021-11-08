@@ -29,7 +29,7 @@ const getFieldType = (tableName: string, fieldName: string, fieldType: string, i
 	}
 }
 
-export default ({tableName, rows}: Table) => {
+export default ({tableName, rows}: Table, pk: string) => {
 	let out = "";
 
 	const className = toCamelCaseLeadCap(fromUpperSnake(depluralize(tableName)));
@@ -61,7 +61,7 @@ export default ({tableName, rows}: Table) => {
 	rows.forEach((row, i) => {
 		const nullableAnnotation = nullableAnnotations[i];
 		if (nullableAnnotation) {
-			console.log("nullable record for " + tableName + "." + row.columnName)
+		//	console.log("nullable record for " + tableName + "." + row.columnName)
 			out += ind(2) + "@NullableInDatabase" + NL;
 		} else {
 		//	console.log("no nullable record for " + tableName + "." + row.columnName)
@@ -72,8 +72,10 @@ export default ({tableName, rows}: Table) => {
 		out += ind(2) + `val ${fieldName} = new ${fieldClass}(self, "${row.columnName}"${size})` + NL
 	})
 	out += ind(1) + "}" + NL
-	out += NL
-	out += ind(1) + `def primaryKey: IntDatabaseField = fields.UNKNOWN` + NL;
+	if (pk) {
+		out += NL
+		out += ind(1) + `def primaryKey: IntDatabaseField = fields.${toCamelCase(fromUpperSnake(pk))}` + NL;
+	}
 	out += "}"
 	return out;
 }
