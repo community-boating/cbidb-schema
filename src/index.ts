@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import {readColumns, readPKs} from './read-file'
 import writeStorable from './write-neptune-storable'
+import writeDto from './write-dto'
 import {fromUpperSnake, toCamelCaseLeadCap, depluralize} from "./format"
 
 // run to generate data
@@ -25,8 +26,6 @@ export type Row = PK & {
 	nullable: boolean
 }
 
-
-
 export type Table = {
 	tableName: string,
 	rows: Row[]
@@ -46,7 +45,9 @@ Promise.all([readColumns(), readPKs()]).then(([columns, pks]) => {
 	tables.forEach(table => {
 		const pkRecord = pks.find(pk => pk.tableName == table.tableName)
 		const pk = pkRecord && pkRecord.columnName
-		const fileName = toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName)))
-		fs.writeFileSync(`out/${fileName}.scala`, writeStorable(table, pk));
+		const fileName = "Put" + toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName))) + "Dto"
+		fs.writeFileSync(`out/entities/${fileName}.scala`, writeStorable(table, pk));
+		fs.writeFileSync(`out/dtos/${fileName}.scala`, writeDto(table, pk));
+
 	});
 })
