@@ -25,7 +25,7 @@ export default ({tableName, rows}: Table, pk: string) => {
 	rows.forEach(row => {
 		const isPk = row.columnName == pk
 		const dataType = isPk ? "INT" : mapDataType(row.columnType, row.columnSize);
-		out += `${delim} ${row.columnName} ${dataType} ${row.nullable ? "" : "NOT NULL"} ${isPk ? "AUTO_INCREMENT" : ""}\n`
+		out += `${delim} ${row.columnName} ${dataType} ${row.nullable ? "" : "NOT NULL"} ${isPk ? "AUTO_INCREMENT PRIMARY KEY" : ""}\n`
 		delim = ","
 	})
 	out += ");\n\n"
