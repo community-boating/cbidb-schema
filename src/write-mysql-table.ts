@@ -22,11 +22,24 @@ export default ({tableName, rows}: Table, pk: string, decimals: DecimalLookup) =
 	out += "create table " + tableName + " (\n"
 	let delim = "";
 	rows.forEach(row => {
+		//TODO: mysql reserved word, drop this column
+		if (row.columnName == "LIMIT") return;
+
 		const isPk = row.columnName == pk
-		const isDecimal = decimals[tableName] && decimals[tableName][row.columnName]
+		const isDecimal = decimals[tableName] && decimals[tableName][row.columnName];
+		const miscOverride = {
+			"PERSONS:ALLERGIES": "TEXT",
+			"PERSONS:MEDICATIONS": "TEXT",
+			"PERSONS:SPECIAL_NEEDS": "TEXT",
+			"PERSONS_TEMP:ALLERGIES": "TEXT",
+			"PERSONS_TEMP:MEDICATIONS": "TEXT",
+			"PERSONS_TEMP:SPECIAL_NEEDS": "TEXT",
+		}
 		const dataType = (function() {
+			const override = miscOverride[`${tableName}:${row.columnName}`]
 			if (isPk) return "INT";
 			else if (isDecimal) return "DECIMAL(8,2)";
+			else if (override != undefined) return override;
 			else return mapDataType(row.columnType, row.columnSize)
 		}()) 
 		out += `${delim} ${row.columnName} ${dataType} ${row.nullable ? "" : "NOT NULL"} ${isPk ? "AUTO_INCREMENT PRIMARY KEY" : ""}\n`
