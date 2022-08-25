@@ -42,6 +42,8 @@ Promise.all([readColumns(), readPKs()]).then(([columns, pks]) => {
 		tableName,
 		rows: groupedByTable[tableName]
 	}));
+	
+	fs.writeFileSync(`out/mysql-ddl.sql`, "");
 
 	tables.forEach(table => {
 		const pkRecord = pks.find(pk => pk.tableName == table.tableName)
@@ -49,6 +51,6 @@ Promise.all([readColumns(), readPKs()]).then(([columns, pks]) => {
 		const fileName = "Put" + toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName))) + "Dto"
 		fs.writeFileSync(`out/entities/${fileName}.scala`, writeStorable(table, pk));
 		fs.writeFileSync(`out/dtos/${fileName}.scala`, writeDto(table, pk));
-		console.log(writeMysqlTable(table, pk))
+		fs.appendFileSync(`out/mysql-ddl.sql`, writeMysqlTable(table, pk));
 	});
 })

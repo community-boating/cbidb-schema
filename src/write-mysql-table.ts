@@ -28,7 +28,7 @@ export default ({tableName, rows}: Table, pk: string) => {
 		out += `${delim} ${row.columnName} ${dataType} ${row.nullable ? "" : "NOT NULL"} ${isPk ? "AUTO_INCREMENT" : ""}\n`
 		delim = ","
 	})
-	out += ");\n"
+	out += ");\n\n"
 	return out;
 }
 
