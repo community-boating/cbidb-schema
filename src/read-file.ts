@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { parse } from 'csv';
-import { Row, PK } from './index'
+import { Row, Column } from './index'
 
 export const readColumns = () => {
 	return new Promise<Row[]>((resolve, reject) => {
@@ -19,7 +19,7 @@ export const readColumns = () => {
 }
 
 export const readPKs = () => {
-	return new Promise<PK[]>((resolve, reject) => {
+	return new Promise<Column[]>((resolve, reject) => {
 		const parser = parse({delimiter: ','}, function(err, data){
 			resolve(data.map(row => ({
 				tableName: row[0],
@@ -28,5 +28,18 @@ export const readPKs = () => {
 		});
 		
 		fs.createReadStream('data/pks.csv').pipe(parser);
+	})
+}
+
+export const readDecimals = () => {
+	return new Promise<Column[]>((resolve, reject) => {
+		const parser = parse({delimiter: ','}, function(err, data){
+			resolve(data.map(row => ({
+				tableName: row[0],
+				columnName: row[1]
+			})))
+		});
+		
+		fs.createReadStream('data/decimal-cols.csv').pipe(parser);
 	})
 }
