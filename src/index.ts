@@ -3,6 +3,7 @@ import {readColumns, readPKs} from './read-file'
 import writeStorable from './write-neptune-storable'
 import writeDto from './write-dto'
 import {fromUpperSnake, toCamelCaseLeadCap, depluralize} from "./format"
+import writeMysqlTable from './write-mysql-table'
 
 // run to generate data
 // select table_name, column_name, data_type, data_length, nullable from user_tab_columns order by table_name, column_id
@@ -48,6 +49,6 @@ Promise.all([readColumns(), readPKs()]).then(([columns, pks]) => {
 		const fileName = "Put" + toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName))) + "Dto"
 		fs.writeFileSync(`out/entities/${fileName}.scala`, writeStorable(table, pk));
 		fs.writeFileSync(`out/dtos/${fileName}.scala`, writeDto(table, pk));
-
+		console.log(writeMysqlTable(table, pk))
 	});
 })
