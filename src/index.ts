@@ -42,12 +42,10 @@ Promise.all([readColumns(), readPKs()]).then(([columns, pks]) => {
 		tableName,
 		rows: groupedByTable[tableName]
 	}));
-	
+
 	fs.writeFileSync(`out/mysql-ddl.sql`, "");
 
 	tables.forEach(table => {
-		if (table.tableName == "TABLE_NAME") return;
-
 		const pkRecord = pks.find(pk => pk.tableName == table.tableName)
 		const pk = pkRecord && pkRecord.columnName
 		const fileName = "Put" + toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName))) + "Dto"

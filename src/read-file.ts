@@ -5,7 +5,7 @@ import { Row, PK } from './index'
 export const readColumns = () => {
 	return new Promise<Row[]>((resolve, reject) => {
 		const parser = parse({delimiter: ','}, function(err, data){
-			resolve(data.map(row => ({
+			resolve(data.filter((e, i) => i > 0).map(row => ({
 				tableName: row[0],
 				columnName: row[1],
 				columnType: row[2],
