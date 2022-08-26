@@ -58,9 +58,10 @@ Promise.all([readColumns(), readPKs(), readDecimals()]).then(([columns, pks, dec
 	tables.forEach(table => {
 		const pkRecord = pks.find(pk => pk.tableName == table.tableName)
 		const pk = pkRecord && pkRecord.columnName
-		const fileName = "Put" + toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName))) + "Dto"
-		fs.writeFileSync(`out/entities/${fileName}.scala`, writeStorable(table, pk));
-		fs.writeFileSync(`out/dtos/${fileName}.scala`, writeDto(table, pk));
+		const dtoFileName = "Put" + toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName))) + "Dto"
+		const entityFileName = toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName)))
+		fs.writeFileSync(`out/entities/${entityFileName}.scala`, writeStorable(table, pk));
+		fs.writeFileSync(`out/dtos/${dtoFileName}.scala`, writeDto(table, pk));
 		fs.appendFileSync(`out/mysql-ddl.sql`, writeMysqlTable(table, pk, decimalLookup));
 	});
 })
