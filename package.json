@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "rm out/dtos/* && rm out/entities/* && ts-node src/index.ts"
+    "start": "rm out/dtos/* -f && rm out/entities/* -f && ts-node src/index.ts"
   },
   "author": "",
   "license": "ISC",

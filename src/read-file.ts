@@ -43,3 +43,19 @@ export const readDecimals = () => {
 		fs.createReadStream('data/decimal-cols.csv').pipe(parser);
 	})
 }
+
+export const readTableNameOverrides = () => {
+	return new Promise<{[K: string]: string}>((resolve, reject) => {
+		const parser = parse({delimiter: ','}, function(err, data){
+			resolve(data.map(row => ({
+				tableName: row[0],
+				className: row[1]
+			})).reduce((agg, e) => {
+				agg[e.tableName] = e.className;
+				return agg;
+			}, {} as {[K: string]: string}))
+		});
+		
+		fs.createReadStream('data/table-name-overrides.csv').pipe(parser);
+	})
+}
