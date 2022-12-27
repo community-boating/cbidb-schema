@@ -56,7 +56,7 @@ export default ({tableName, rows}: Table, pk: string, mappedTableName: string) =
 	out += NL;
 	out += `object ${className} extends StorableObject[${className}] {` + NL
 	out += ind(1) + "override val useRuntimeFieldnamesForJson: Boolean = true" + NL + NL
-	out += ind(1) + `val entityName: String = "${tableName}"` + NL;
+	out += ind(1) + `override val entityName: String = "${tableName}"` + NL;
 	out += NL;
 	out += ind(1) + `object fields extends FieldsObject {` + NL;
 	rows.forEach((row, i) => {
