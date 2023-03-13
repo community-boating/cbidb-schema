@@ -46,7 +46,7 @@ export default ({tableName, rows}: Table, pk: string, mappedTableName: string) =
 	out += `class ${className} extends StorableClass(${className}) {` + NL
 	out += ind(1) + "object values extends ValuesObject {" + NL;
 	rows.forEach((row, i) => {
-		const fieldName = toCamelCase(fromUpperSnake(row.columnName));
+		const fieldName = row.apiFieldName;
 		const nullableAnnotation = nullableAnnotations[i];
 		const fieldClass = (row.nullable && !nullableAnnotation ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, false, row.columnSize)
 		out += ind(2) + `val ${fieldName} = new ${fieldClass}(self, ${className}.fields.${fieldName})` + NL
@@ -67,7 +67,7 @@ export default ({tableName, rows}: Table, pk: string, mappedTableName: string) =
 		} else {
 		//	console.log("no nullable record for " + tableName + "." + row.columnName)
 		}
-		const fieldName = toCamelCase(fromUpperSnake(row.columnName));
+		const fieldName = row.apiFieldName;
 		const fieldClass = (row.nullable && !nullableAnnotation ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, true, row.columnSize)
 		const size = (row.columnType == "VARCHAR2" ? `, ${row.columnSize}` : "");
 		out += ind(2) + `val ${fieldName} = new ${fieldClass}(self, "${row.columnName}"${size})` + NL

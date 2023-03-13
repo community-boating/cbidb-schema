@@ -1,0 +1,7 @@
+openapi: 3.0.0
+info:
+  description: "Signout REST"
+  version: "1.0.0"
+  title: "Signout REST"
+  contact:
+    email: "jon@community-boating.org"

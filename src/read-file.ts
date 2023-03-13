@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import { parse } from 'csv';
 import { Row, Column } from './index'
+import { fromUpperSnake, toCamelCase } from './format';
 
 export const readColumns = () => {
 	return new Promise<Row[]>((resolve, reject) => {
@@ -10,7 +11,8 @@ export const readColumns = () => {
 				columnName: row[1],
 				columnType: row[2],
 				columnSize: Number(row[3]),
-				nullable: row[4] == 'Y'
+				nullable: row[4] == 'Y',
+				apiFieldName: toCamelCase(fromUpperSnake(row[1]))
 			})))
 		});
 		

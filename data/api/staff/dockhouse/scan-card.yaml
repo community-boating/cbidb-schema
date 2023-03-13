@@ -1,0 +1,88 @@
+get:
+  summary: "Scan a card to fetch person info"
+  parameters:
+    - in: query
+      name: cardNumber
+      schema:
+        type: integer
+  responses:
+    "200":
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              personId:
+                type: number
+              cardNumber:
+                type: string
+              nameFirst:
+                type: string
+              nameLast:
+                type: string
+              bannerComment:
+                nullable: true
+                type: string
+              specialNeeds:
+                nullable: true
+                type: string
+              # activeMemberships:
+              #   type: array
+              #   items:
+              #     $ref: "#/components/schemas/CardScanResultMembership"
+              # personRatings:
+              #   type: array
+              #   items:
+              #     $ref: "#/components/schemas/CardScanResultRating"
+              apClassSignupsToday:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    signupId:
+                      type: number
+                    instanceId:
+                      type: number
+                    personId:
+                      type: number
+                    signupType:
+                      type: string
+                    signupDatetime:
+                      type: string
+                    sequence:
+                      type: number
+              jpClassSignupsToday:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    signupId:
+                      type: number
+                    instanceId:
+                      type: number
+                    personId:
+                      type: number
+                    signupType:
+                      type: string
+                    signupDatetime:
+                      type: string
+                    sequence:
+                      type: number
+              maxFlagsPerBoat:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    $$boatType:
+                      type: object
+                      properties:
+                        boatId:
+                          type: number
+                    $$programId:
+                      type: object
+                      properties:
+                        programId:
+                          type: number
+                    maxFlag:
+                      type: string

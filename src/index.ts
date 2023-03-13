@@ -4,6 +4,7 @@ import writeStorable from './write-neptune-storable'
 import writeDto from './write-dto'
 import {fromUpperSnake, toCamelCaseLeadCap, depluralize} from "./format"
 import writeMysqlTable from './write-mysql-table'
+import processApiSpecs from './processApiSpecs'
 
 // run to generate data (data/table-columns.csv)
 // select table_name, column_name, data_type, data_length, nullable from user_tab_columns order by table_name, column_id
@@ -29,7 +30,8 @@ export type Column = {
 export type Row = Column & {
 	columnType: string,
 	columnSize: number,
-	nullable: boolean
+	nullable: boolean,
+	apiFieldName: string
 }
 
 export type Table = {
@@ -71,4 +73,6 @@ Promise.all([readColumns(), readPKs(), readDecimals(), readTableNameOverrides()]
 		fs.writeFileSync(`out/dtos/${dtoFileName}.scala`, writeDto(table, pk));
 		fs.appendFileSync(`out/mysql-ddl.sql`, writeMysqlTable(table, pk, decimalLookup));
 	});
+
+	processApiSpecs(tables, nameOverrides);
 })

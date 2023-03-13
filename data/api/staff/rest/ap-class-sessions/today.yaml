@@ -1,0 +1,22 @@
+get:
+  summary: "Get today's class sessions"
+  responses:
+    "200":
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $$$objectRef:
+                object: ApClassSession
+                fieldSet:
+                  - sessionId
+                  - instanceId
+                  - headcount
+                references:
+                  - object: ApClassInstance
+                    referenceKey: apClassInstance
+                    fieldSet:
+                      - instanceId
+                      - cancelledDatetime
