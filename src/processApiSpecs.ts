@@ -1,12 +1,16 @@
 import * as YAML from 'yaml';
 import * as fs from 'fs';
 import * as path from 'path'
-import { Table } from 'index';
+import { exit, Table } from './index';
 import { depluralize, fromUpperSnake, toCamelCaseLeadCap } from './format';
 
 const SPEC_DIR = "./data/api"
 
 type TableLookup = {[K: string]: Table};
+
+export const CUSTOM_ATTR_GENERAL_TYPE = "$$generalType";
+
+const CUSTOM_ATTRS = [CUSTOM_ATTR_GENERAL_TYPE]
 
 function scanDirectory(pathPrefix: string, tableLookup: TableLookup) {
 	const thisPath = path.join(SPEC_DIR, pathPrefix);
@@ -59,7 +63,7 @@ function performStorableSubstitutions(yaml: object, tableLookup: TableLookup) {
 }
 
 const processSchema = (tableLookup: TableLookup) => (schema: any) => {
-	console.log("schema: ", schema)
+	// console.log("schema: ", schema)
 	if (schema.type && schema.type == "object") {
 		return {
 			...schema,
@@ -76,10 +80,10 @@ const processSchema = (tableLookup: TableLookup) => (schema: any) => {
 }
 
 function performSchemaSubstitution(objectSchema: any, tableLookup: TableLookup) {
-	console.log("OBJ SCHEMA: ", objectSchema);
+	// console.log("OBJ SCHEMA: ", objectSchema);
 	const table = tableLookup[objectSchema.object]
 	if (table === undefined) exit(`Could not find object named "${objectSchema.object}"`);
-	console.log(table)
+	// console.log(table)
 	const ret = {
 		type: "object",
 		properties: {
@@ -95,7 +99,7 @@ function performSchemaSubstitution(objectSchema: any, tableLookup: TableLookup) 
 			}, {})
 		}
 	}
-	console.log(ret);
+	// console.log(ret);
 	return ret;
 }
 
@@ -108,9 +112,24 @@ function mapObjectProps(o: object, f: (value: any) => any) {
 
 function mapObjectColumnToYaml(tableName: string, col: any) {
 	var ret = {} as any;
-	console.log(col)
+	// console.log(col)
 	switch(col.columnType) {
 		case "VARCHAR2":
+		case "CHAR":
+			ret[CUSTOM_ATTR_GENERAL_TYPE] = "string";
+			break;
+		case "DATE":
+			ret[CUSTOM_ATTR_GENERAL_TYPE] = "datetime";
+			break;
+		case "NUMBER":
+			ret[CUSTOM_ATTR_GENERAL_TYPE] = "int";
+			break;
+		default:
+			exit(`Unmapped data type ${col.columnType} found for ${tableName}.${col.columnName}`);
+	}
+	switch(col.columnType) {
+		case "VARCHAR2":
+		case "CHAR":
 		case "DATE":
 			ret.type = "string";
 			break;
@@ -124,9 +143,16 @@ function mapObjectColumnToYaml(tableName: string, col: any) {
 	return ret;
 }
 
-function exit(msg: string) {
-	console.error(msg)
-	process.exit(1)
+function removeCustomAttrs(input: any) {
+	if (input instanceof Array) {
+		return input.map(removeCustomAttrs)
+	} else if (typeof input == 'object') {
+		var prunedChildren = {};
+		Object.keys(input).forEach(k => prunedChildren[k] = removeCustomAttrs(input[k]))
+		var ret =  Object.assign({}, input, prunedChildren);
+		CUSTOM_ATTRS.forEach(a => delete ret[a])
+		return ret;
+	} else return input;
 }
 
 export default function(tables: Table[], nameOverrides: {[K: string]: string}) {
@@ -143,10 +169,12 @@ export default function(tables: Table[], nameOverrides: {[K: string]: string}) {
 		return agg;
 	}, {})
 
-	const ret = {
+	const oasDecorated = {
 		...YAML.parse(fs.readFileSync("./data/api-header.yaml", 'utf8')),
 		paths
 	}
 
-	console.log(JSON.stringify(ret))
+	const oasPure = removeCustomAttrs(oasDecorated)
+
+	return {oasDecorated, oasPure}
 }

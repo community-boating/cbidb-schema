@@ -1,0 +1,76 @@
+post:
+  summary: "Attempt to create a signout"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            skipperPersonId:
+              type: number
+            programId:
+              type: number
+            skipperCardNumber:
+              type: string
+            skipperTestRatingId:
+              nullable: true
+              type: number
+            boatId:
+              type: number
+            sailNumber:
+              nullable: true
+              type: string
+            hullNumber:
+              nullable: true
+              type: string
+            classSessionId:
+              nullable: true
+              type: number
+            isRacing:
+              type: boolean
+            dockmasterOverride:
+              type: boolean
+            didInformKayakRules:
+              type: boolean
+            signoutCrew:
+              type: array
+              items:
+                type: object
+                properties:
+                  personId:
+                    type: number
+                  cardNumber:
+                    type: string
+                  testRatingId:
+                    nullable: true
+                    type: number
+  responses:
+    "200":
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            $$$objectRef:
+              object: Signout
+              fieldSet:
+                - signoutId
+                - personId
+                - programId
+                - boatId
+                - signoutType
+                - cardNum
+                - sailNumber
+                - hullNumber
+                - testRatingId
+                - testResult
+                - isQueued
+                - signoutDatetime
+                - signinDatetime
+                - comments
+              references:
+                - object: ApClassInstance
+                  referenceKey: apClassInstance
+                  fieldSet:
+                    - instanceId
+                    - cancelledDatetime

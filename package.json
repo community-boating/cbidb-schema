@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "rm out/dtos/* -f && rm out/entities/* -f && ts-node src/index.ts"
+    "start": "rm ./out -rf && ts-node src/index.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "csv": "^5.5.3",
+    "mkdirp": "^2.1.5",
     "swagger-ui-express": "^4.6.2",
     "ts-node": "^10.4.0",
     "typescript": "^4.4.4",
