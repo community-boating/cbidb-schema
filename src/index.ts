@@ -7,6 +7,7 @@ import writeMysqlTable from './write-mysql-table'
 import processApiSpecs from './processApiSpecs'
 import mkdirp from 'mkdirp'
 import writeApiTypescript from './writeApiTypescript'
+import writeApiScala from './writeApiScala'
 
 // run to generate data (data/table-columns.csv)
 // select table_name, column_name, data_type, data_length, nullable from user_tab_columns order by table_name, column_id
@@ -91,6 +92,7 @@ function main() {
 		const {oasPure, oasDecorated} = processApiSpecs(tables, nameOverrides);
 
 		writeApiTypescript(oasDecorated);
+		writeApiScala(oasDecorated);
 	})
 
 }
