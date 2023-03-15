@@ -80,11 +80,19 @@ const processSchema = (tableLookup: TableLookup) => (schema: any) => {
 }
 
 function performSchemaSubstitution(objectSchema: any, tableLookup: TableLookup) {
+	if (objectSchema.type == "array") {
+		var objectSchemaRmArray = Object.assign({}, objectSchema)
+		delete objectSchemaRmArray.type;
+		return {
+			type: "array",
+			items: performSchemaSubstitution(objectSchemaRmArray, tableLookup)
+		}
+	}
 	// console.log("OBJ SCHEMA: ", objectSchema);
 	const table = tableLookup[objectSchema.object]
 	if (table === undefined) exit(`Could not find object named "${objectSchema.object}"`);
 	// console.log(table)
-	const ret = {
+	var ret = {
 		type: "object",
 		properties: {
 			...objectSchema.fieldSet.reduce((agg, f) => {
@@ -98,7 +106,8 @@ function performSchemaSubstitution(objectSchema: any, tableLookup: TableLookup) 
 				return agg;
 			}, {})
 		}
-	}
+	} as any;
+	if (objectSchema.nullable) ret.nullable = true;
 	// console.log(ret);
 	return ret;
 }

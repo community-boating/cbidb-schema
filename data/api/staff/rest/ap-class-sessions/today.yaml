@@ -14,9 +14,57 @@ get:
                   - sessionId
                   - instanceId
                   - headcount
+                  - cancelledDatetime
+                  - sessionDatetime
+                  - sessionLength
                 references:
                   - object: ApClassInstance
                     referenceKey: apClassInstance
                     fieldSet:
                       - instanceId
                       - cancelledDatetime
+                      - signupsStartOverride
+                      - signupMin
+                      - price
+                      - signupMax
+                      - formatId
+                      - hideOnline
+                      - cancelByOverride
+                      - locationString
+                    references:
+                      - object: ApClassSignup
+                        referenceKey: apClassSignups
+                        type: array
+                        fieldSet: 
+                          - instanceId
+                          - discountInstanceId
+                          - voidedOnline
+                          - personId
+                          - orderId
+                          - price
+                          - signupId
+                          - closeId
+                          - sequence
+                          - paymentMedium
+                          - ccTransNum
+                          - paymentLocation
+                          - voidCloseId
+                          - signupType
+                          - signupNote
+                          - signupDatetime
+                        references:
+                          - object: Person
+                            referenceKey: person
+                            fieldSet: 
+                              - personId
+                              - nameFirst
+                              - nameLast
+                          - object: ApClassWaitlistResult
+                            referenceKey: apClassWaitlistResult
+                            nullable: true
+                            fieldSet: 
+                              - wlResult
+                              - foVmDatetime
+                              - offerExpDatetime
+                              - signupId
+                              - foAlertDatetime
