@@ -81,7 +81,7 @@ function build() {
 		const groupedByTable: {[K: string]: Row[]} = columns.reduce((hash, row) => {
 			hash[row.tableName] = (hash[row.tableName] || []).concat([row]);
 			return hash;
-		}, {});
+		}, {} as any);
 	
 		const tables: Table[] = Object.keys(groupedByTable).map(tableName => ({
 			tableName,

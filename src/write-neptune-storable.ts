@@ -29,7 +29,7 @@ const getFieldType = (tableName: string, fieldName: string, fieldType: string, i
 	}
 }
 
-export default ({tableName, rows}: Table, pk: string, mappedTableName: string) => {
+export default ({tableName, rows}: Table, pk: string, mappedTableName: string | undefined) => {
 	let out = "";
 
 	const className = mappedTableName || toCamelCaseLeadCap(fromUpperSnake(depluralize(tableName)));
