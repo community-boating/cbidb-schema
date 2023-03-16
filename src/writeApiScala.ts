@@ -3,6 +3,7 @@ import path = require("path")
 import * as fs from 'fs'
 import StringBuilder from "./StringBuilder"
 import { exit } from "./index"
+import { CUSTOM_ATTR_NULL_IMPLIES_FALSE } from "./processApiSpecs"
 
 const CONTAINER_PATH = "./out/api/scala"
 
@@ -21,9 +22,9 @@ function formatPathAsPackage(apiPath: String) {
 }
 
 function writeFile(apiPath: string, method: string, spec) {
-	console.log(apiPath)
-	console.log(method)
-	console.log(spec.responses["200"].content["application/json"].schema)
+	// console.log(apiPath)
+	// console.log(method)
+	// console.log(spec.responses["200"].content["application/json"].schema)
 
 	const successResponseSchema = spec.responses["200"].content["application/json"].schema
 	const successResponseSchemaToUse = (
@@ -32,7 +33,7 @@ function writeFile(apiPath: string, method: string, spec) {
 		: successResponseSchema
 	)
 
-	console.log(successResponseSchemaToUse)
+	// console.log(successResponseSchemaToUse)
 
 	const sb = new StringBuilder;
 
@@ -74,7 +75,7 @@ function printScalaClass(schema: any, className: string, apiPath: string): strin
 	sb.appendLine(`case class ${className} (`)
 	Object.keys(schema.properties).forEach(p => {
 		const array = schema.properties[p].type == "array"
-		const option = schema.properties[p].nullable
+		const option = schema.properties[p].nullable && !schema.properties[p][CUSTOM_ATTR_NULL_IMPLIES_FALSE]
 		sb.appendLine(
 			`${p}: ${option ? "Option[" : ""}` + 
 			(array ? "List[" : "") +
@@ -101,9 +102,11 @@ function printScalaClass(schema: any, className: string, apiPath: string): strin
 }
 
 function getFieldType(fieldName: string, fieldSchema: any, subClasses: any, baseClassName: string, apiPath: string) {
+	// console.log(fieldSchema)
 	switch (fieldSchema.type) {
 		case "number":
-			return "Int"
+			if (fieldSchema.$$generalType == "double") return "Double"
+			else return "Int"
 		case "boolean":
 			return "Boolean"
 		case "string":

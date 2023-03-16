@@ -66,11 +66,19 @@ post:
                 - testResult
                 - isQueued
                 - signoutDatetime
-                - signinDatetime
-                - comments
               references:
-                - object: ApClassInstance
-                  referenceKey: apClassInstance
+                - object: SignoutCrew
+                  type: array
+                  referenceKey: crew
                   fieldSet:
-                    - instanceId
-                    - cancelledDatetime
+                    - signoutId
+                    - personId
+                    - cardNum
+                    - startActive
+                - object: SignoutTest
+                  type: array
+                  referenceKey: tests
+                  fieldSet:
+                    - signoutId
+                    - personId
+                    - ratingId

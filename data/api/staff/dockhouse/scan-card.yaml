@@ -27,14 +27,44 @@ get:
               specialNeeds:
                 nullable: true
                 type: string
-              # activeMemberships:
-              #   type: array
-              #   items:
-              #     $ref: "#/components/schemas/CardScanResultMembership"
-              # personRatings:
-              #   type: array
-              #   items:
-              #     $ref: "#/components/schemas/CardScanResultRating"
+              signoutBlockReason:
+                nullable: true
+                type: string
+              activeMemberships:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    assignId:
+                      type: number
+                    membershipTypeId:
+                      type: number
+                    startDate:
+                      type: string
+                      nullable: true
+                    expirationDate:
+                      type: string
+                      nullable: true
+                    discountName:
+                      type: string
+                      nullable: true
+                    isDiscountFrozen:
+                      type: boolean
+                    hasGuestPrivs:
+                      type: boolean
+              personRatings:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    ratingId:
+                      type: number
+                    programId:
+                      type: number
+                    ratingName:
+                      type: string
+                    status:
+                      type: string
               apClassSignupsToday:
                 type: array
                 items:
@@ -74,15 +104,9 @@ get:
                 items:
                   type: object
                   properties:
-                    $$boatType:
-                      type: object
-                      properties:
-                        boatId:
-                          type: number
-                    $$programId:
-                      type: object
-                      properties:
-                        programId:
-                          type: number
+                    boatId:
+                      type: number
+                    programId:
+                      type: number
                     maxFlag:
                       type: string

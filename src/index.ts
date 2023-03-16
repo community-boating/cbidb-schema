@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import {readColumns, readDecimals, readPKs, readTableNameOverrides} from './read-file'
+import {readBooleans, readColumns, readDecimals, readPKs, readTableNameOverrides} from './read-file'
 import writeStorable from './write-neptune-storable'
 import writeDto from './write-dto'
 import {fromUpperSnake, toCamelCaseLeadCap, depluralize} from "./format"
@@ -9,6 +9,8 @@ import mkdirp from 'mkdirp'
 import writeApiTypescript from './writeApiTypescript'
 import writeApiScala from './writeApiScala'
 import * as YAML from 'yaml';
+import * as express from 'express'
+import * as swaggerUi from 'swagger-ui-express';
 
 // run to generate data (data/table-columns.csv)
 // select table_name, column_name, data_type, data_length, nullable from user_tab_columns order by table_name, column_id
@@ -43,8 +45,12 @@ export type Table = {
 	rows: Row[]
 }
 
-export type DecimalLookup = {
+export type ColumnLookup = {
 	[K: string]: {[K: string]: true}
+}
+
+export type BooleanLookup = {
+	[K: string]: {[K: string]: boolean}
 }
 
 export function exit(msg: string) {
@@ -52,20 +58,26 @@ export function exit(msg: string) {
 	process.exit(1)
 }
 
-function main() {
+function build() {
 	mkdirp.sync("out/dtos");
 	mkdirp.sync("out/entities");
 	mkdirp.sync("out/ddl");
 	mkdirp.sync("out/api/typescript");
 	mkdirp.sync("out/api/scala");
 
-	Promise.all([readColumns(), readPKs(), readDecimals(), readTableNameOverrides()])
-	.then(([columns, pks, decimals, nameOverrides]) => {
+	Promise.all([readColumns(), readPKs(), readDecimals(), readBooleans(), readTableNameOverrides()])
+	.then(([columns, pks, decimals, booleans, nameOverrides]) => {
 		const decimalLookup = decimals.reduce((hash, {tableName, columnName}) => {
 			hash[tableName] = hash[tableName] || {};
 			hash[tableName][columnName] = true;
 			return hash;
-		}, {} as DecimalLookup)
+		}, {} as ColumnLookup)
+
+		const booleanLookup = booleans.reduce((hash, {tableName, columnName}) => {
+			hash[tableName] = hash[tableName] || {};
+			hash[tableName][columnName] = true;
+			return hash;
+		}, {} as BooleanLookup)
 	
 		const groupedByTable: {[K: string]: Row[]} = columns.reduce((hash, row) => {
 			hash[row.tableName] = (hash[row.tableName] || []).concat([row]);
@@ -90,7 +102,7 @@ function main() {
 			fs.appendFileSync(`out/ddl/mysql-ddl.sql`, writeMysqlTable(table, pk, decimalLookup));
 		});
 	
-		const {oasPure, oasDecorated} = processApiSpecs(tables, nameOverrides);
+		const {oasPure, oasDecorated} = processApiSpecs(tables, nameOverrides, decimalLookup, booleanLookup);
 
 		fs.writeFileSync(`out/api/combined.yaml`, YAML.stringify(oasPure));
 
@@ -100,4 +112,23 @@ function main() {
 
 }
 
-main();
+function serve() {
+	const swaggerDocument = YAML.parse( fs.readFileSync('./out/api/combined.yaml', 'utf8'));
+	const app = express();
+	
+	app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+	
+	console.log("Listening on port 8080")
+	app.listen(8080)
+}
+
+switch (process.argv[2]) {
+	case "build":
+		build();
+		break;
+	case "serve":
+		serve();
+		break;
+	default:
+		console.error("unrecognized command " + process.argv[2])
+}

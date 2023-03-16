@@ -10,3 +10,4 @@
 "PERSONS_TAGS","PersonTag"
 "RATINGS_PROGRAMS","RatingProgram"
 "USERS_ROLES","UserRole"
+"SIGNOUTS_TESTS","SignoutTest"

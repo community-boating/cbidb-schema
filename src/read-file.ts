@@ -46,6 +46,19 @@ export const readDecimals = () => {
 	})
 }
 
+export const readBooleans = () => {
+	return new Promise<Column[]>((resolve, reject) => {
+		const parser = parse({delimiter: ','}, function(err, data){
+			resolve(data.map(row => ({
+				tableName: row[0],
+				columnName: row[1]
+			})))
+		});
+		
+		fs.createReadStream('data/boolean-cols.csv').pipe(parser);
+	})
+}
+
 export const readTableNameOverrides = () => {
 	return new Promise<{[K: string]: string}>((resolve, reject) => {
 		const parser = parse({delimiter: ','}, function(err, data){

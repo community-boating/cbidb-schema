@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "rm ./out -rf && ts-node src/index.ts"
+    "build": "rm ./out -rf && ts-node src/index.ts build",
+    "serve": "ts-node src/index.ts serve"
   },
   "author": "",
   "license": "ISC",

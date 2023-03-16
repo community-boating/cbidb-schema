@@ -3,6 +3,7 @@ import path = require("path")
 import * as fs from 'fs'
 import StringBuilder from "./StringBuilder"
 import { exit } from "./index"
+import { CUSTOM_ATTR_NULL_IMPLIES_FALSE } from "./processApiSpecs"
 
 const CONTAINER_PATH = "./out/api/typescript"
 
@@ -15,21 +16,21 @@ function processPath(apiPath: string, pathObject: any) {
 }
 
 function writeFile(apiPath: string, method: string, spec) {
-	console.log(apiPath)
-	console.log(method)
-	console.log(spec.responses["200"].content["application/json"].schema)
+	// console.log(apiPath)
+	// console.log(method)
+	// console.log(spec.responses["200"].content["application/json"].schema)
 
 	const successResponseSchema = spec.responses["200"].content["application/json"].schema
 
-	console.log(successResponseSchema)
+	// console.log(successResponseSchema)
 
 	var importTracker = {};
 
 	const sb = new StringBuilder;
 
 	sb.appendLine(`import * as t from 'io-ts';`)
-	sb.appendLine(`import APIWrapper from 'core/APIWrapper';`)
-	sb.appendLine(`import { HttpMethod } from "core/HttpMethod";`)
+	// sb.appendLine(`import APIWrapper from 'core/APIWrapper';`)
+	// sb.appendLine(`import { HttpMethod } from "core/HttpMethod";`)
 	sb.appendLine(IMPORT_SUB_TOKEN) // replace with import of optionals maybe
 	sb.appendLine(`export const path = "${apiPath}"`)
 	sb.appendLine()
@@ -66,27 +67,28 @@ function writeFile(apiPath: string, method: string, spec) {
 }
 
 function createTsValidator(schema: any, apiPath: string, importTracker: any, baseIndentLevel: number) {
+	const nullable = schema.nullable && !schema[CUSTOM_ATTR_NULL_IMPLIES_FALSE]
 	switch (schema.type) {
 		case "number":
-			if (schema.nullable) {
+			if (nullable) {
 				const ret = "OptionalNumber"
 				importTracker[ret] = true;
 				return ret;
 			} else return "t.number"
 		case "boolean":
-			if (schema.nullable) {
+			if (nullable) {
 				const ret = "OptionalBoolean"
 				importTracker[ret] = true;
 				return ret;
 			} else return "t.boolean"
 		case "string":
-			if (schema.nullable) {
+			if (nullable) {
 				const ret = "OptionalString"
 				importTracker[ret] = true;
 				return ret;
 			} else return "t.string"
 		case "array":
-			const optional1 = schema.nullable
+			const optional1 = nullable
 			if (optional1) {
 				importTracker["makeOptional"] = true;
 			}
@@ -96,7 +98,7 @@ function createTsValidator(schema: any, apiPath: string, importTracker: any, bas
 			sb1.append(`)${optional1 ? ")" : ""}`)
 			return sb1.toString();
 		case "object":
-			const optional2 = schema.nullable
+			const optional2 = nullable
 			if (optional2) {
 				importTracker["makeOptional"] = true;
 			}

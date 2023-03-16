@@ -1,4 +1,4 @@
-import { DecimalLookup, Table } from "index";
+import { ColumnLookup, Table } from "index";
 
 function mapDataType(oracleType: string, length: number) {
 	switch (oracleType) {
@@ -25,7 +25,7 @@ const compositePrimaryKeys = {
 	"SIGNOUT_SNAPSHOTS": "SNAPSHOT_DATETIME, PROGRAM_ID, BOAT_ID"
 }
 
-export default ({tableName, rows}: Table, pk: string, decimals: DecimalLookup) => {
+export default ({tableName, rows}: Table, pk: string, decimals: ColumnLookup) => {
 	let out = "";
 
 	out += "create table " + tableName + " (\n"
