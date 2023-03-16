@@ -8,17 +8,17 @@ export default function serve() {
 	const app = express();
 	
 
-	app.get('/scala', (req, res) => {
+	app.get('/scala/zip', (req, res) => {
 		res.download("./out/api/scala.zip")
 	})
 
-	app.get('/typescript', (req, res) => {
+	app.get('/typescript.zip', (req, res) => {
 		res.download("./out/api/typescript.zip")
 	})
 
 	
 	app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-	
+
 	console.log("Listening on port 8080")
 	app.listen(8080)
 }

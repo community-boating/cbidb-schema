@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   description: |
-    - [Download Scala DTOs](/scala)
-    - [Download Typescript io-ts models](/typescript)
+    - [Download Scala DTOs](/scala.zip)
+    - [Download Typescript io-ts models](/typescript.zip)
   version: "1.0.0"
   title: "CBI API Documentation"
