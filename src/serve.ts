@@ -8,7 +8,7 @@ export default function serve() {
 	const app = express();
 	
 
-	app.get('/scala/zip', (req, res) => {
+	app.get('/scala.zip', (req, res) => {
 		res.download("./out/api/scala.zip")
 	})
 

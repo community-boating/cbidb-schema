@@ -107,6 +107,7 @@ function build() {
 
 		writeApiTypescript(oasDecorated);
 		writeApiScala(oasDecorated);
+		console.log(JSON.stringify(oasDecorated))
 	})
 
 }

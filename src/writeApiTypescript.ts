@@ -3,7 +3,7 @@ import path = require("path")
 import * as fs from 'fs'
 import StringBuilder from "./StringBuilder"
 import { exit } from "./index"
-import { CUSTOM_ATTR_NULL_IMPLIES_FALSE } from "./processApiSpecs"
+import { CUSTOM_ATTR_GENERAL_TYPE, CUSTOM_ATTR_NULL_IMPLIES_FALSE } from "./processApiSpecs"
 
 const CONTAINER_PATH = "./out/api/typescript"
 
@@ -82,11 +82,23 @@ function createTsValidator(schema: any, apiPath: string, importTracker: any, bas
 				return ret;
 			} else return "t.boolean"
 		case "string":
-			if (nullable) {
-				const ret = "OptionalString"
-				importTracker[ret] = true;
-				return ret;
-			} else return "t.string"
+			if (schema[CUSTOM_ATTR_GENERAL_TYPE] == "datetime") {
+				if (nullable) {
+					const ret = "OptionalDateTime"
+					importTracker[ret] = true;
+					return ret;
+				} else {
+					const ret = "DateTime"
+					importTracker[ret] = true;
+					return ret;
+				}
+			} else {
+				if (nullable) {
+					const ret = "OptionalString"
+					importTracker[ret] = true;
+					return ret;
+				} else return "t.string"
+			}
 		case "array":
 			const optional1 = nullable
 			if (optional1) {
