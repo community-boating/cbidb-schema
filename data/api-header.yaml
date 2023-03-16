@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  description: "Signout REST"
+  description: |
+    - [Download Scala DTOs](/scala)
+    - [Download Typescript io-ts models](/typescript)
   version: "1.0.0"
-  title: "Signout REST"
-  contact:
-    email: "jon@community-boating.org"
+  title: "CBI API Documentation"

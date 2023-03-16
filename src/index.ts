@@ -9,8 +9,7 @@ import mkdirp from 'mkdirp'
 import writeApiTypescript from './writeApiTypescript'
 import writeApiScala from './writeApiScala'
 import * as YAML from 'yaml';
-import * as express from 'express'
-import * as swaggerUi from 'swagger-ui-express';
+import serve from './serve'
 
 // run to generate data (data/table-columns.csv)
 // select table_name, column_name, data_type, data_length, nullable from user_tab_columns order by table_name, column_id
@@ -110,16 +109,6 @@ function build() {
 		writeApiScala(oasDecorated);
 	})
 
-}
-
-function serve() {
-	const swaggerDocument = YAML.parse( fs.readFileSync('./out/api/combined.yaml', 'utf8'));
-	const app = express();
-	
-	app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-	
-	console.log("Listening on port 8080")
-	app.listen(8080)
 }
 
 switch (process.argv[2]) {
