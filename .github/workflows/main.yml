@@ -18,29 +18,6 @@ on:
       - cluster/*
   workflow_dispatch:
 jobs:
-  build:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-      - name: config
-        run: cp ini/config.ini.ci ini/config.ini
-      - name: install
-        run: npm install
-      - name: inject commit sha
-        run: sed -i 's/\$\$GITHUB_SHA\$\$/'"${GITHUB_SHA}"'/' public/index.html
-      - name: build
-        # circular dependencies are currently throwing warnings
-        run: CI=false npm run build
-      - name: tar
-        run: tar -zcvf build.tar.gz ./build
-      - name: save artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: build.tar.gz
-          path: build.tar.gz
   image:
     runs-on: ubuntu-20.04
     needs: build
