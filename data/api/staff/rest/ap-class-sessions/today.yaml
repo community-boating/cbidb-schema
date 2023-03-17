@@ -17,6 +17,7 @@ get:
                   - cancelledDatetime
                   - sessionDatetime
                   - sessionLength
+                  - isMakeup
                 references:
                   - object: ApClassInstance
                     referenceKey: apClassInstance
@@ -31,6 +32,7 @@ get:
                       - hideOnline
                       - cancelByOverride
                       - locationString
+                      - doNotAutoCancel
                     references:
                       - object: ApClassSignup
                         referenceKey: apClassSignups
@@ -68,3 +70,4 @@ get:
                               - offerExpDatetime
                               - signupId
                               - foAlertDatetime
+                              - permitOvercrowd

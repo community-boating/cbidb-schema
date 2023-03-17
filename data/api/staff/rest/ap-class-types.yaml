@@ -1,0 +1,41 @@
+get:
+  summary: "Get all AP class types and formats"
+  responses:
+    "200":
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $$$objectRef:
+                object: ApClassType
+                fieldSet:
+                  - typeId
+                  - typeName
+                  - ratingPrereq
+                  - classPrereq
+                  - ratingOverkill
+                  - displayOrder
+                  - descLong
+                  - descShort
+                  - classOverkill
+                  - colorCode
+                  - noSignup
+                  - priceDefault
+                  - signupMaxDefault
+                  - signupMinDefault
+                  - disallowIfOverkill
+                references:
+                  - object: ApClassFormat
+                    referenceKey: apClassFormats
+                    type: array
+                    fieldSet:
+                      - formatId
+                      - typeId
+                      - description
+                      - priceDefaultOverride
+                      - sessionCtDefault
+                      - sessionLengthDefault
+                      - signupMaxDefaultOverride
+                      - signupMinDefaultOverride

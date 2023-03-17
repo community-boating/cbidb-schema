@@ -126,6 +126,7 @@ function mapObjectColumnToYaml(tableName: string, col: any, decimalLookup: Colum
 	// console.log(col)
 	switch(col.columnType) {
 		case "VARCHAR2":
+		case "CLOB":
 			ret[CUSTOM_ATTR_GENERAL_TYPE] = "string";
 			break;
 		case "CHAR":
@@ -155,6 +156,7 @@ function mapObjectColumnToYaml(tableName: string, col: any, decimalLookup: Colum
 				break;
 			} // else fall through
 		case "VARCHAR2":
+		case "CLOB":
 		case "DATE":
 			ret.type = "string";
 			break;
