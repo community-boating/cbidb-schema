@@ -1,7 +1,11 @@
 openapi: 3.0.0
 info:
   description: |
+    ### Generated code ###
     - [Download Scala DTOs](/scala.zip)
     - [Download Typescript io-ts models](/typescript.zip)
+
+    ### Table descriptions ###
+    [https://wiki.community-boating.org/bin/view/Main/Database/All%20tables](https://wiki.community-boating.org/bin/view/Main/Database/All%20tables)
   version: "1.0.0"
   title: "CBI API Documentation"

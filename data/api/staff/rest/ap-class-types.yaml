@@ -1,5 +1,5 @@
 get:
-  summary: "Get all AP class types and formats"
+  summary: "Get all AP class types and formats (all time)"
   responses:
     "200":
       description: "Success"
@@ -20,7 +20,6 @@ get:
                   - descLong
                   - descShort
                   - classOverkill
-                  - colorCode
                   - noSignup
                   - priceDefault
                   - signupMaxDefault
