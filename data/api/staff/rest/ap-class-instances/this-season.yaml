@@ -1,0 +1,36 @@
+get:
+  summary: "Get this season's AP class instances and sessions"
+  responses:
+    "200":
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $$$objectRef:
+                object: ApClassInstance
+                fieldSet:
+                  - instanceId
+                  - cancelledDatetime
+                  - signupsStartOverride
+                  - signupMin
+                  - price
+                  - signupMax
+                  - formatId
+                  - hideOnline
+                  - cancelByOverride
+                  - locationString
+                  - doNotAutoCancel
+                references:
+                  - object: ApClassSession
+                    type: array
+                    referenceKey: apClassSessions
+                    fieldSet:
+                      - sessionId
+                      - instanceId
+                      - headcount
+                      - cancelledDatetime
+                      - sessionDatetime
+                      - sessionLength
+                      - isMakeup

@@ -103,6 +103,8 @@ function build() {
 	
 		const {oasPure, oasDecorated} = processApiSpecs(tables, nameOverrides, decimalLookup, booleanLookup);
 
+		console.log(YAML.stringify(oasDecorated))
+
 		fs.writeFileSync(`out/api/combined.yaml`, YAML.stringify(oasPure));
 
 		writeApiTypescript(oasDecorated);

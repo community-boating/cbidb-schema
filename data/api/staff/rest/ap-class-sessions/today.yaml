@@ -1,5 +1,5 @@
 get:
-  summary: "Get today's class sessions"
+  summary: "Get today's AP class sessions and signups"
   responses:
     "200":
       description: "Success"

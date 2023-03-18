@@ -81,7 +81,7 @@ const processSchema = (tableLookup: TableLookup, decimalLookup: ColumnLookup, bo
 }
 
 function performSchemaSubstitution(objectSchema: any, tableLookup: TableLookup, decimalLookup: ColumnLookup, booleanLookup: BooleanLookup) {
-	console.log(objectSchema)
+	// console.log(objectSchema)
 	if (objectSchema.type == "array") {
 		var objectSchemaRmArray = Object.assign({}, objectSchema)
 		delete objectSchemaRmArray.type;
