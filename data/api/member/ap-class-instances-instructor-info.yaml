@@ -1,0 +1,25 @@
+get:
+  summary: "Get info per ap class instance, intended for volunteer instructors"
+  responses:
+    "200":
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                instanceId: 
+                  type: number
+                instructorName: 
+                  type: string
+                  nullable: true
+                signupCt: 
+                  type: number
+                signupMin: 
+                  type: number
+                  nullable: true
+                signupMax: 
+                  type: number
+                  nullable: true
