@@ -1,0 +1,18 @@
+post:
+  summary: "Member: Attempt to signup to teach AP class instance"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            instanceId:
+              type: number
+  responses:
+    "200":
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            type: string

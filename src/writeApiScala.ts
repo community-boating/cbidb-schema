@@ -69,7 +69,7 @@ function writeFile(apiPath: string, method: string, spec) {
 }
 
 function printScalaClass(schema: any, className: string, apiPath: string): string {
-	if (!schema.properties) exit("Non object schema passed to scala class " + className)
+	if (!schema.properties) return "" // exit("Non object schema passed to scala class " + className)
 	var subClasses = {}
 	const sb = new StringBuilder
 	sb.appendLine(`case class ${className} (`)
