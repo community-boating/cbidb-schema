@@ -22,6 +22,7 @@ get:
                   - cancelByOverride
                   - locationString
                   - doNotAutoCancel
+                  - instructorId
                 references:
                   - object: ApClassSession
                     type: array
@@ -34,3 +35,10 @@ get:
                       - sessionDatetime
                       - sessionLength
                       - isMakeup
+                  - object: Person
+                    referenceKey: instructor
+                    nullable: true
+                    fieldSet:
+                      - personId
+                      - nameFirst
+                      - nameLast
