@@ -51,7 +51,8 @@ export const readBooleans = () => {
 		const parser = parse({delimiter: ','}, function(err, data){
 			resolve(data.map(row => ({
 				tableName: row[0],
-				columnName: row[1]
+				columnName: row[1],
+				nullImpliesFalse: row[2] == "true"
 			})))
 		});
 		
@@ -72,5 +73,18 @@ export const readTableNameOverrides = () => {
 		});
 		
 		fs.createReadStream('data/table-name-overrides.csv').pipe(parser);
+	})
+}
+
+export const readNonNullOverrides = () => {
+	return new Promise<Column[]>((resolve, reject) => {
+		const parser = parse({delimiter: ','}, function(err, data){
+			resolve(data.map(row => ({
+				tableName: row[0],
+				columnName: row[1]
+			})))
+		});
+		
+		fs.createReadStream('data/non-null-override.csv').pipe(parser);
 	})
 }

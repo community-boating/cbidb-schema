@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import {readBooleans, readColumns, readDecimals, readPKs, readTableNameOverrides} from './read-file'
+import {readBooleans, readColumns, readDecimals, readNonNullOverrides, readPKs, readTableNameOverrides} from './read-file'
 import writeStorable from './write-neptune-storable'
 import writeDto from './write-dto'
 import {fromUpperSnake, toCamelCaseLeadCap, depluralize} from "./format"
@@ -30,6 +30,7 @@ export type TableNameMapping = {
 export type Column = {
 	tableName: string,
 	columnName: string,
+	nullImpliesFalse?: boolean
 }
 
 export type Row = Column & {
@@ -64,15 +65,21 @@ function build() {
 	mkdirp.sync("out/api/typescript");
 	mkdirp.sync("out/api/scala");
 
-	Promise.all([readColumns(), readPKs(), readDecimals(), readBooleans(), readTableNameOverrides()])
-	.then(([columns, pks, decimals, booleans, nameOverrides]) => {
+	Promise.all([readColumns(), readPKs(), readDecimals(), readBooleans(), readTableNameOverrides(), readNonNullOverrides()])
+	.then(([columns, pks, decimals, booleans, nameOverrides, nonNullOverrides]) => {
 		const decimalLookup = decimals.reduce((hash, {tableName, columnName}) => {
 			hash[tableName] = hash[tableName] || {};
 			hash[tableName][columnName] = true;
 			return hash;
 		}, {} as ColumnLookup)
 
-		const booleanLookup = booleans.reduce((hash, {tableName, columnName}) => {
+		const booleanLookup = booleans.reduce((hash, {tableName, columnName, nullImpliesFalse}) => {
+			hash[tableName] = hash[tableName] || {};
+			hash[tableName][columnName] = nullImpliesFalse;
+			return hash;
+		}, {} as BooleanLookup)
+
+		const nonNullLookup = nonNullOverrides.reduce((hash, {tableName, columnName}) => {
 			hash[tableName] = hash[tableName] || {};
 			hash[tableName][columnName] = true;
 			return hash;
@@ -96,12 +103,12 @@ function build() {
 			const pk = pkRecord && pkRecord.columnName
 			const dtoFileName = "Put" + toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName))) + "Dto"
 			const entityFileName = toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName)))
-			fs.writeFileSync(`out/entities/${mappedTableName || entityFileName}.scala`, writeStorable(table, pk, mappedTableName));
+			fs.writeFileSync(`out/entities/${mappedTableName || entityFileName}.scala`, writeStorable(table, pk, mappedTableName, decimalLookup, booleanLookup, nonNullLookup));
 			fs.writeFileSync(`out/dtos/${dtoFileName}.scala`, writeDto(table, pk));
 			fs.appendFileSync(`out/ddl/mysql-ddl.sql`, writeMysqlTable(table, pk, decimalLookup));
 		});
 	
-		const {oasPure, oasDecorated} = processApiSpecs(tables, nameOverrides, decimalLookup, booleanLookup);
+		const {oasPure, oasDecorated} = processApiSpecs(tables, nameOverrides, decimalLookup, booleanLookup, nonNullLookup);
 
 		console.log(YAML.stringify(oasDecorated))
 

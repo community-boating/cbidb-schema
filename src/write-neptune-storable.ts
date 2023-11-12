@@ -1,4 +1,4 @@
-import { Table } from './index'
+import { BooleanLookup, ColumnLookup, Table } from './index'
 import {fromUpperSnake, toCamelCaseLeadCap, toCamelCase, depluralize} from "./format"
 import {dateOnly, nullableInDb, typeOverrides} from "./overrides"
 
@@ -7,14 +7,15 @@ const NL = '\n'
 
 const ind = (n: number) => n > 0 ? INDENT + ind(n-1) : "";
 
-const getFieldType = (tableName: string, fieldName: string, fieldType: string, isField: boolean, fieldSize: number) => {
+const getFieldType = (tableName: string, fieldName: string, fieldType: string, isField: boolean, fieldSize: number, decimalLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) => {
 	const override = typeOverrides[tableName] && typeOverrides[tableName][fieldName];
 	if (override) return override;
 
 	switch (fieldType){
 	case "CHAR":
-		if (fieldSize && fieldSize == 1) {
-			return isField ? "BooleanDatabaseField" : "BooleanFIeldValue"
+		if (fieldSize && fieldSize==1) console.log("%%%% ", tableName + "." + fieldName)
+		if (booleanLookup[tableName] && undefined != booleanLookup[tableName][fieldName]) {
+			return isField ? "BooleanDatabaseField" : "BooleanFieldValue"
 		} // else fall through to varchar/string
 	case "VARCHAR2":
 		return isField ? "StringDatabaseField" : "StringFieldValue";
@@ -29,7 +30,7 @@ const getFieldType = (tableName: string, fieldName: string, fieldType: string, i
 	}
 }
 
-export default ({tableName, rows}: Table, pk: string, mappedTableName: string | undefined) => {
+export default ({tableName, rows}: Table, pk: string, mappedTableName: string | undefined, decimalLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) => {
 	let out = "";
 
 	const className = mappedTableName || toCamelCaseLeadCap(fromUpperSnake(depluralize(tableName)));
@@ -46,9 +47,12 @@ export default ({tableName, rows}: Table, pk: string, mappedTableName: string | 
 	out += `class ${className} extends StorableClass(${className}) {` + NL
 	out += ind(1) + "object values extends ValuesObject {" + NL;
 	rows.forEach((row, i) => {
+		const nullable = row.nullable && (undefined == nonNullLookup[tableName] || undefined == nonNullLookup[tableName][row.columnName])
 		const fieldName = row.apiFieldName;
 		const nullableAnnotation = nullableAnnotations[i];
-		const fieldClass = (row.nullable && !nullableAnnotation ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, false, row.columnSize)
+		const isBoolean = (booleanLookup[tableName] && undefined != booleanLookup[tableName][row.columnName])
+		const nullImpliesFalse = isBoolean && true === booleanLookup[tableName][row.columnName]
+		const fieldClass = (nullable && !nullableAnnotation && !nullImpliesFalse ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, false, row.columnSize, decimalLookup, booleanLookup, nonNullLookup)
 		out += ind(2) + `val ${fieldName} = new ${fieldClass}(self, ${className}.fields.${fieldName})` + NL
 	})
 	out += ind(1) + "}" + NL
@@ -68,9 +72,15 @@ export default ({tableName, rows}: Table, pk: string, mappedTableName: string | 
 		//	console.log("no nullable record for " + tableName + "." + row.columnName)
 		}
 		const fieldName = row.apiFieldName;
-		const fieldClass = (row.nullable && !nullableAnnotation ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, true, row.columnSize)
+		const isBoolean = (booleanLookup[tableName] && undefined != booleanLookup[tableName][row.columnName])
+		const nullImpliesFalse = isBoolean && true === booleanLookup[tableName][row.columnName]
+		const booleanSuffix = (isBoolean
+			? `, ${nullImpliesFalse}`
+			: ""
+		)
+		const fieldClass = (row.nullable && !nullableAnnotation && !nullImpliesFalse ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, true, row.columnSize, decimalLookup, booleanLookup, nonNullLookup)
 		const size = (row.columnType == "VARCHAR2" ? `, ${row.columnSize}` : "");
-		out += ind(2) + `val ${fieldName} = new ${fieldClass}(self, "${row.columnName}"${size})` + NL
+		out += ind(2) + `val ${fieldName} = new ${fieldClass}(self, "${row.columnName}"${size}${booleanSuffix})` + NL
 	})
 	out += ind(1) + "}" + NL
 	if (pk) {
