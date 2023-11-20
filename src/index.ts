@@ -12,7 +12,9 @@ import * as YAML from 'yaml';
 import serve from './serve'
 
 // run to generate data (data/table-columns.csv)
-// select table_name, column_name, data_type, data_length, nullable from user_tab_columns order by table_name, column_id
+// select c.table_name, column_name, data_type, data_length, nullable from user_tab_columns c, user_tables t
+// where c.table_name = t.table_name
+// order by c.table_name, column_id
 
 // get PKs
 // SELECT cols.table_name, cols.column_name
