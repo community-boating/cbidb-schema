@@ -20,13 +20,23 @@ const getFieldType = (tableName: string, fieldName: string, fieldType: string, i
 	case "VARCHAR2":
 		return isField ? "StringDatabaseField" : "StringFieldValue";
 	case "DATE":
-		if (dateOnly[tableName] && dateOnly[tableName][fieldName]) return isField ? "LocalDateDatabaseField" : "LocalDateFieldValue"
-		else return isField ? "LocalDateTimeDatabaseField" : "LocalDateTimeFieldValue"
+		if (dateOnly[tableName] && dateOnly[tableName][fieldName]) return isField ? "DateDatabaseField" : "DateFieldValue"
+		else return isField ? "DateTimeDatabaseField" : "DateTimeFieldValue"
 	case "NUMBER":
 		if (fieldName.endsWith("ID")) return isField ? "IntDatabaseField" : "IntFieldValue"
 		return isField ? "DoubleDatabaseField" : "DoubleFieldValue"
 	default:
 		return "UnknownFieldType";
+	}
+}
+
+const tableNameAsVarable = (name: string) => {
+	switch (name) {
+	case "type":
+	case "class":
+		return "`" + name + "`";
+	default:
+		return name;		
 	}
 }
 
@@ -68,7 +78,7 @@ export default (
 	out += ind(1) + "override object values extends ValuesObject {" + NL;
 	rows.forEach((row, i) => {
 		const nullable = row.nullable && (undefined == nonNullLookup[tableName] || undefined == nonNullLookup[tableName][row.columnName])
-		const fieldName = row.apiFieldName;
+		const fieldName = tableNameAsVarable(row.apiFieldName);
 		const nullableAnnotation = nullableAnnotations[i];
 		const isBoolean = (booleanLookup[tableName] && undefined != booleanLookup[tableName][row.columnName])
 		const nullImpliesFalse = isBoolean && true === booleanLookup[tableName][row.columnName]
@@ -84,6 +94,7 @@ export default (
 	out += NL;
 	out += ind(1) + `object fields extends FieldsObject {` + NL;
 	rows.forEach((row, i) => {
+		const nullable = row.nullable && (undefined == nonNullLookup[tableName] || undefined == nonNullLookup[tableName][row.columnName])
 		const nullableAnnotation = nullableAnnotations[i];
 		if (nullableAnnotation) {
 		//	console.log("nullable record for " + tableName + "." + row.columnName)
@@ -91,15 +102,20 @@ export default (
 		} else {
 		//	console.log("no nullable record for " + tableName + "." + row.columnName)
 		}
-		const fieldName = row.apiFieldName;
+		const fieldName = tableNameAsVarable(row.apiFieldName);
 		const isBoolean = (booleanLookup[tableName] && undefined != booleanLookup[tableName][row.columnName])
 		const nullImpliesFalse = isBoolean && true === booleanLookup[tableName][row.columnName]
-		const booleanSuffix = (isBoolean
+		const booleanSuffix = (isBoolean && !nullable
 			? `, ${nullImpliesFalse}`
 			: ""
 		)
-		const fieldClass = (row.nullable && !nullableAnnotation && !nullImpliesFalse ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, true, row.columnSize, decimalLookup, booleanLookup, nonNullLookup)
-		const size = (row.columnType == "VARCHAR2" ? `, ${row.columnSize}` : "");
+		const hasLength = (
+			(row.columnType == "VARCHAR2") || (
+				row.columnType == "CHAR" && !isBoolean
+			)
+		)
+		const fieldClass = (nullable && !nullableAnnotation && !nullImpliesFalse ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, true, row.columnSize, decimalLookup, booleanLookup, nonNullLookup)
+		const size = (hasLength ? `, ${row.columnSize}` : "");
 		out += ind(2) + `val ${fieldName} = new ${fieldClass}(self, "${row.columnName}"${size}${booleanSuffix})` + NL
 	})
 	out += ind(1) + "}" + NL
