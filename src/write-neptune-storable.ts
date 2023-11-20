@@ -1,4 +1,4 @@
-import { BooleanLookup, ColumnLookup, Table } from './index'
+import { BooleanLookup, ColumnLookup, Reference, Table } from './index'
 import {fromUpperSnake, toCamelCaseLeadCap, toCamelCase, depluralize} from "./format"
 import {dateOnly, nullableInDb, typeOverrides} from "./overrides"
 
@@ -30,12 +30,22 @@ const getFieldType = (tableName: string, fieldName: string, fieldType: string, i
 	}
 }
 
-export default ({tableName, rows}: Table, pk: string, mappedTableName: string | undefined, decimalLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) => {
+export default (
+	{tableName, rows}: Table,
+	pk: string,
+	mappedTableName: string | undefined,
+	decimalLookup: ColumnLookup,
+	booleanLookup: BooleanLookup,
+	nonNullLookup: BooleanLookup,
+	references: Reference[]
+) => {
 	let out = "";
 
 	const className = mappedTableName || toCamelCaseLeadCap(fromUpperSnake(depluralize(tableName)));
 
 	const nullableAnnotations = rows.map(row => nullableInDb[tableName] && nullableInDb[tableName][row.columnName]);
+
+	const referencesThisTable = references.filter(r => r.tableName == tableName)
 
 	out += "package org.sailcbi.APIServer.Entities.EntityDefinitions" + NL;
 	out += NL;
@@ -45,7 +55,17 @@ export default ({tableName, rows}: Table, pk: string, mappedTableName: string | 
 	out += "import com.coleji.neptune.Util.Initializable" + NL;
 	out += NL;
 	out += `class ${className} extends StorableClass(${className}) {` + NL
-	out += ind(1) + "object values extends ValuesObject {" + NL;
+
+	if (referencesThisTable.length > 0) {
+		out += ind(1) + "override object references extends ReferencesObject {" + NL;
+		referencesThisTable.forEach(r => {
+			const referencedTableName = toCamelCaseLeadCap(fromUpperSnake(depluralize(r.referencedTableName)))
+			const type = r.type ? `${r.type}[${referencedTableName}]` : referencedTableName
+			out += ind(2) + `val ${r.variableName} = new Initializable[${type}]` + NL
+		})
+		out += ind(1) + "}" + NL + NL;
+	}
+	out += ind(1) + "override object values extends ValuesObject {" + NL;
 	rows.forEach((row, i) => {
 		const nullable = row.nullable && (undefined == nonNullLookup[tableName] || undefined == nonNullLookup[tableName][row.columnName])
 		const fieldName = row.apiFieldName;

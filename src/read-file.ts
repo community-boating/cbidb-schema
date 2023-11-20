@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { parse } from 'csv';
-import { Row, Column } from './index'
+import { Row, Column, Reference } from './index'
 import { fromUpperSnake, toCamelCase } from './format';
 
 export const readColumns = () => {
@@ -86,5 +86,20 @@ export const readNonNullOverrides = () => {
 		});
 		
 		fs.createReadStream('data/non-null-override.csv').pipe(parser);
+	})
+}
+
+export const readReferences = () => {
+	return new Promise<Reference[]>((resolve, reject) => {
+		const parser = parse({delimiter: ','}, function(err, data){
+			resolve(data.map(row => ({
+				tableName: row[0],
+				variableName: row[1],
+				referencedTableName: row[2],
+				type: row[3]
+			})))
+		});
+		
+		fs.createReadStream('data/references.csv').pipe(parser);
 	})
 }

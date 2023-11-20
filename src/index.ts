@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import {readBooleans, readColumns, readDecimals, readNonNullOverrides, readPKs, readTableNameOverrides} from './read-file'
+import {readBooleans, readColumns, readDecimals, readNonNullOverrides, readPKs, readReferences, readTableNameOverrides} from './read-file'
 import writeStorable from './write-neptune-storable'
 import writeDto from './write-dto'
 import {fromUpperSnake, toCamelCaseLeadCap, depluralize} from "./format"
@@ -53,6 +53,13 @@ export type BooleanLookup = {
 	[K: string]: {[K: string]: boolean}
 }
 
+export type Reference = {
+	tableName: string,
+	variableName: string,
+	referencedTableName: string,
+	type?: string
+}
+
 export function exit(msg: string) {
 	console.error(msg)
 	process.exit(1)
@@ -65,8 +72,8 @@ function build() {
 	mkdirp.sync("out/api/typescript");
 	mkdirp.sync("out/api/scala");
 
-	Promise.all([readColumns(), readPKs(), readDecimals(), readBooleans(), readTableNameOverrides(), readNonNullOverrides()])
-	.then(([columns, pks, decimals, booleans, nameOverrides, nonNullOverrides]) => {
+	Promise.all([readColumns(), readPKs(), readDecimals(), readBooleans(), readTableNameOverrides(), readNonNullOverrides(), readReferences()])
+	.then(([columns, pks, decimals, booleans, nameOverrides, nonNullOverrides, references]) => {
 		const decimalLookup = decimals.reduce((hash, {tableName, columnName}) => {
 			hash[tableName] = hash[tableName] || {};
 			hash[tableName][columnName] = true;
@@ -103,7 +110,7 @@ function build() {
 			const pk = pkRecord && pkRecord.columnName
 			const dtoFileName = "Put" + toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName))) + "Dto"
 			const entityFileName = toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName)))
-			fs.writeFileSync(`out/entities/${mappedTableName || entityFileName}.scala`, writeStorable(table, pk, mappedTableName, decimalLookup, booleanLookup, nonNullLookup));
+			fs.writeFileSync(`out/entities/${mappedTableName || entityFileName}.scala`, writeStorable(table, pk, mappedTableName, decimalLookup, booleanLookup, nonNullLookup, references));
 			fs.writeFileSync(`out/dtos/${dtoFileName}.scala`, writeDto(table, pk));
 			fs.appendFileSync(`out/ddl/mysql-ddl.sql`, writeMysqlTable(table, pk, decimalLookup));
 		});
