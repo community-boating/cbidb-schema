@@ -43,7 +43,7 @@ const tableNameAsVarable = (name: string) => {
 export default (
 	{tableName, rows}: Table,
 	pk: string,
-	mappedTableName: string | undefined,
+	nameOverrides: {[K: string]: string},
 	decimalLookup: ColumnLookup,
 	booleanLookup: BooleanLookup,
 	nonNullLookup: BooleanLookup,
@@ -51,7 +51,7 @@ export default (
 ) => {
 	let out = "";
 
-	const className = mappedTableName || toCamelCaseLeadCap(fromUpperSnake(depluralize(tableName)));
+	const className = nameOverrides[tableName] || toCamelCaseLeadCap(fromUpperSnake(depluralize(tableName)));
 
 	const nullableAnnotations = rows.map(row => nullableInDb[tableName] && nullableInDb[tableName][row.columnName]);
 
@@ -69,7 +69,7 @@ export default (
 	if (referencesThisTable.length > 0) {
 		out += ind(1) + "override object references extends ReferencesObject {" + NL;
 		referencesThisTable.forEach(r => {
-			const referencedTableName = toCamelCaseLeadCap(fromUpperSnake(depluralize(r.referencedTableName)))
+			const referencedTableName = nameOverrides[r.referencedTableName] || toCamelCaseLeadCap(fromUpperSnake(depluralize(r.referencedTableName)))
 			const type = r.type ? `${r.type}[${referencedTableName}]` : referencedTableName
 			out += ind(2) + `val ${r.variableName} = new Initializable[${type}]` + NL
 		})

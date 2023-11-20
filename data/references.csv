@@ -1,2 +1,13 @@
+"AP_CLASS_FORMATS","apClassType","AP_CLASS_TYPES",
+"AP_CLASS_INSTANCES","apClassFormat","AP_CLASS_FORMATS",
+"AP_CLASS_INSTANCES","apClassSessions","AP_CLASS_SESSIONS","IndexedSeq"
+"AP_CLASS_INSTANCES","apClassSignups","AP_CLASS_SIGNUPS","IndexedSeq"
+"AP_CLASS_INSTANCES","instructor","PERSONS","Option"
+"AP_CLASS_SESSIONS","apClassInstance","AP_CLASS_INSTANCES",
+"AP_CLASS_SIGNUPS","apClassInstance","AP_CLASS_INSTANCES",
+"AP_CLASS_SIGNUPS","person","PERSONS",
+"AP_CLASS_SIGNUPS","apClassWaitlistResult","AP_CLASS_WL_RESULTS","Option"
+"AP_CLASS_TYPES","apClassFormats","AP_CLASS_FORMATS","IndexedSeq"
+"DISCOUNT_INSTANCES","discount","DISCOUNTS",
 "SIGNOUTS","skipper","PERSON",
 "SIGNOUTS","crew","SIGNOUT_CREW","List"
