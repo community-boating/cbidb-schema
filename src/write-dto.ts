@@ -1,6 +1,6 @@
-import { Table } from './index'
+import { BooleanLookup, ColumnLookup, Table } from './index'
 import {fromUpperSnake, toCamelCaseLeadCap, toCamelCase, depluralize} from "./format"
-import {nullableInDb, typeOverrides} from "./overrides"
+import {typeOverrides} from "./overrides"
 
 const INDENT = '\t'
 const NL = '\n'
@@ -28,12 +28,10 @@ const getFieldType = (tableName: string, fieldName: string, fieldType: string, f
 	}
 }
 
-export default ({tableName, rows}: Table, pk: string) => {
+export default ({tableName, rows}: Table, pk: string, nonNullLookup: BooleanLookup) => {
 	let out = "";
 
 	const className = toCamelCaseLeadCap(fromUpperSnake(depluralize(tableName)))
-
-	const nullableAnnotations = rows.map(row => nullableInDb[tableName] && nullableInDb[tableName][row.columnName]);
 
 	out += "package org.sailcbi.APIServer.Entities.dto" + NL;
 	out += NL;
@@ -43,9 +41,9 @@ export default ({tableName, rows}: Table, pk: string) => {
 	out += NL;
 	out += `case class Put${className}Dto (` + NL
 	rows.forEach((row, i) => {
+		const dontOverrideNullable = undefined == nonNullLookup[tableName] || undefined == nonNullLookup[tableName][row.columnName]
+		const nullable = (row.nullable || row.columnName == pk) && dontOverrideNullable
 		const fieldName = toCamelCase(fromUpperSnake(row.columnName));
-		const nullableAnnotation = nullableAnnotations[i];
-		const nullable = (row.nullable || row.columnName == pk) && !nullableAnnotation;
 		const fieldClass = `${nullable?"Option[":""}${getFieldType(row.tableName, row.columnName, row.columnType, row.columnSize)}${nullable?"]":""}`
 		out += ind(1) + `${fieldName}: ${fieldClass},` + NL
 	})

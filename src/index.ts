@@ -119,7 +119,7 @@ function build() {
 			const dtoFileName = "Put" + toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName))) + "Dto"
 			const entityFileName = toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName)))
 			fs.writeFileSync(`out/entities/${mappedTableName || entityFileName}.scala`, writeStorable(table, pk, nameOverrides, integerLookup, booleanLookup, nonNullLookup, references, localDateLookup));
-			fs.writeFileSync(`out/dtos/${dtoFileName}.scala`, writeDto(table, pk));
+			fs.writeFileSync(`out/dtos/${dtoFileName}.scala`, writeDto(table, pk, nonNullLookup));
 			fs.appendFileSync(`out/ddl/mysql-ddl.sql`, writeMysqlTable(table, pk, integerLookup));
 		});
 	

@@ -1,6 +1,6 @@
 import { BooleanLookup, Column, ColumnLookup, Reference, Table } from './index'
 import {fromUpperSnake, toCamelCaseLeadCap, toCamelCase, depluralize} from "./format"
-import {nullableInDb, typeOverrides} from "./overrides"
+import {typeOverrides, calculations} from "./overrides"
 
 const INDENT = '\t'
 const NL = '\n'
@@ -67,8 +67,6 @@ export default (
 
 	const className = nameOverrides[tableName] || toCamelCaseLeadCap(fromUpperSnake(depluralize(tableName)));
 
-	const nullableAnnotations = rows.map(row => nullableInDb[tableName] && nullableInDb[tableName][row.columnName]);
-
 	const referencesThisTable = references.filter(r => r.tableName == tableName)
 
 	out += "package org.sailcbi.APIServer.Entities.EntityDefinitions" + NL;
@@ -76,10 +74,16 @@ export default (
 	out += "import com.coleji.neptune.Storable.FieldValues._" + NL;
 	out += "import com.coleji.neptune.Storable.Fields._" + NL;
 	out += "import com.coleji.neptune.Storable._" + NL;
-	out += "import com.coleji.neptune.Util.Initializable" + NL;
+	out += "import com.coleji.neptune.Util._" + NL;
+	out += "import org.sailcbi.APIServer.Entities.NullableInDatabase" + NL;
+	out += "import org.sailcbi.APIServer.Entities.entitycalculations._" + NL;
+	out += "import play.api.libs.json._" + NL;
 	out += NL;
 	out += `class ${className} extends StorableClass(${className}) {` + NL
 
+	if (calculations[tableName]) {
+		out += calculations[tableName] + NL
+	}
 	if (referencesThisTable.length > 0) {
 		out += ind(1) + "override object references extends ReferencesObject {" + NL;
 		referencesThisTable.forEach(r => {
@@ -91,12 +95,12 @@ export default (
 	}
 	out += ind(1) + "override object values extends ValuesObject {" + NL;
 	rows.forEach((row, i) => {
-		const nullable = row.nullable && (undefined == nonNullLookup[tableName] || undefined == nonNullLookup[tableName][row.columnName])
+		const dontOverrideNullable = undefined == nonNullLookup[tableName] || undefined == nonNullLookup[tableName][row.columnName]
+		const nullable = row.nullable && dontOverrideNullable
 		const fieldName = tableNameAsVarable(row.apiFieldName);
-		const nullableAnnotation = nullableAnnotations[i];
 		const isBoolean = (booleanLookup[tableName] && undefined != booleanLookup[tableName][row.columnName])
 		const nullImpliesFalse = isBoolean && true === booleanLookup[tableName][row.columnName]
-		const fieldClass = (nullable && !nullableAnnotation && !nullImpliesFalse ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, false, row.columnSize, integerLookup, booleanLookup, nonNullLookup, localDateLookup)
+		const fieldClass = (nullable && !nullImpliesFalse ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, false, row.columnSize, integerLookup, booleanLookup, nonNullLookup, localDateLookup)
 		out += ind(2) + `val ${fieldName} = new ${fieldClass}(self, ${className}.fields.${fieldName})` + NL
 	})
 	out += ind(1) + "}" + NL
@@ -108,8 +112,9 @@ export default (
 	out += NL;
 	out += ind(1) + `object fields extends FieldsObject {` + NL;
 	rows.forEach((row, i) => {
-		const nullable = row.nullable && (undefined == nonNullLookup[tableName] || undefined == nonNullLookup[tableName][row.columnName])
-		const nullableAnnotation = nullableAnnotations[i];
+		const dontOverrideNullable = undefined == nonNullLookup[tableName] || undefined == nonNullLookup[tableName][row.columnName]
+		const nullable = row.nullable && (dontOverrideNullable)
+		const nullableAnnotation = !dontOverrideNullable;
 		if (nullableAnnotation) {
 		//	console.log("nullable record for " + tableName + "." + row.columnName)
 			out += ind(2) + "@NullableInDatabase" + NL;
