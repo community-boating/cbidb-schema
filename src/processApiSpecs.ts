@@ -13,7 +13,7 @@ export const CUSTOM_ATTR_NULL_IMPLIES_FALSE = "$$nullImpliesFalse";
 
 const CUSTOM_ATTRS = [CUSTOM_ATTR_GENERAL_TYPE, CUSTOM_ATTR_NULL_IMPLIES_FALSE]
 
-function scanDirectory(pathPrefix: string, tableLookup: TableLookup, decimalLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) {
+function scanDirectory(pathPrefix: string, tableLookup: TableLookup, integerLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) {
 	const thisPath = path.join(SPEC_DIR, pathPrefix);
 	const contents = fs.readdirSync(thisPath);
 	// console.log(contents)
@@ -28,20 +28,20 @@ function scanDirectory(pathPrefix: string, tableLookup: TableLookup, decimalLook
 
 	return [{
 		path: thisPath,
-		files: files.map(f => processFile(path.join(pathPrefix, f.relativePath), tableLookup, decimalLookup, booleanLookup, nonNullLookup))
-	}].concat(subDirs.flatMap(f => scanDirectory(path.join(pathPrefix, f.relativePath), tableLookup, decimalLookup, booleanLookup, nonNullLookup)))
+		files: files.map(f => processFile(path.join(pathPrefix, f.relativePath), tableLookup, integerLookup, booleanLookup, nonNullLookup))
+	}].concat(subDirs.flatMap(f => scanDirectory(path.join(pathPrefix, f.relativePath), tableLookup, integerLookup, booleanLookup, nonNullLookup)))
 }
 
-function processFile(filePath: string, tableLookup: TableLookup, decimalLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) {
+function processFile(filePath: string, tableLookup: TableLookup, integerLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) {
 	const yaml = YAML.parse(fs.readFileSync(path.join(SPEC_DIR, filePath), 'utf8'))
 	// console.log(yaml)
 	return {
-		...performStorableSubstitutions(yaml, tableLookup, decimalLookup, booleanLookup, nonNullLookup),
+		...performStorableSubstitutions(yaml, tableLookup, integerLookup, booleanLookup, nonNullLookup),
 		path: "/" + filePath.split(".")[0]
 	}
 }
 
-function performStorableSubstitutions(yaml: object, tableLookup: TableLookup, decimalLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) {
+function performStorableSubstitutions(yaml: object, tableLookup: TableLookup, integerLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) {
 	return mapObjectProps(yaml, methodObject => {
 		// e.g. get/post
 		return {
@@ -54,7 +54,7 @@ function performStorableSubstitutions(yaml: object, tableLookup: TableLookup, de
 						// e.g. application/json
 						return {
 							...contentObject,
-							schema: processSchema(tableLookup, decimalLookup, booleanLookup, nonNullLookup)(contentObject.schema)
+							schema: processSchema(tableLookup, integerLookup, booleanLookup, nonNullLookup)(contentObject.schema)
 						}
 					})
 				}
@@ -63,31 +63,31 @@ function performStorableSubstitutions(yaml: object, tableLookup: TableLookup, de
 	})
 }
 
-const processSchema = (tableLookup: TableLookup, decimalLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) => (schema: any) => {
+const processSchema = (tableLookup: TableLookup, integerLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) => (schema: any) => {
 	// console.log("schema: ", schema)
 	if (schema.type && schema.type == "object") {
 		return {
 			...schema,
-			properties: mapObjectProps(schema.properties, processSchema(tableLookup, decimalLookup, booleanLookup, nonNullLookup))
+			properties: mapObjectProps(schema.properties, processSchema(tableLookup, integerLookup, booleanLookup, nonNullLookup))
 		}
 	} else if (schema.type && schema.type == "array") {
 		return {
 			...schema,
-			items: processSchema(tableLookup, decimalLookup, booleanLookup, nonNullLookup)(schema.items)
+			items: processSchema(tableLookup, integerLookup, booleanLookup, nonNullLookup)(schema.items)
 		}
 	} else if (schema["$$$objectRef"]) {
-		return performSchemaSubstitution(schema["$$$objectRef"], tableLookup, decimalLookup, booleanLookup, nonNullLookup)
+		return performSchemaSubstitution(schema["$$$objectRef"], tableLookup, integerLookup, booleanLookup, nonNullLookup)
 	} else return schema;
 }
 
-function performSchemaSubstitution(objectSchema: any, tableLookup: TableLookup, decimalLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) {
+function performSchemaSubstitution(objectSchema: any, tableLookup: TableLookup, integerLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) {
 	// console.log(objectSchema)
 	if (objectSchema.type == "array") {
 		var objectSchemaRmArray = Object.assign({}, objectSchema)
 		delete objectSchemaRmArray.type;
 		return {
 			type: "array",
-			items: performSchemaSubstitution(objectSchemaRmArray, tableLookup, decimalLookup, booleanLookup, nonNullLookup)
+			items: performSchemaSubstitution(objectSchemaRmArray, tableLookup, integerLookup, booleanLookup, nonNullLookup)
 		}
 	}
 	// console.log("OBJ SCHEMA: ", objectSchema);
@@ -100,11 +100,11 @@ function performSchemaSubstitution(objectSchema: any, tableLookup: TableLookup, 
 			...objectSchema.fieldSet.reduce((agg, f) => {
 				const row = table.rows.find(r => r.apiFieldName == f)
 				if (row === undefined) exit(`No column match for ${table.tableName}.${f}`)
-				agg[f] = mapObjectColumnToYaml(table.tableName, row, decimalLookup, booleanLookup, nonNullLookup);
+				agg[f] = mapObjectColumnToYaml(table.tableName, row, integerLookup, booleanLookup, nonNullLookup);
 				return agg;
 			}, {}),
 			...(objectSchema.references || []).reduce((agg, r) => {
-				agg["$$" + r.referenceKey] = performSchemaSubstitution(r, tableLookup, decimalLookup, booleanLookup, nonNullLookup)
+				agg["$$" + r.referenceKey] = performSchemaSubstitution(r, tableLookup, integerLookup, booleanLookup, nonNullLookup)
 				return agg;
 			}, {})
 		}
@@ -121,7 +121,7 @@ function mapObjectProps(o: object, f: (value: any) => any) {
 	}, {});
 }
 
-function mapObjectColumnToYaml(tableName: string, col: any, decimalLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) {
+function mapObjectColumnToYaml(tableName: string, col: any, integerLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) {
 	var ret = {} as any;
 	// console.log(col)
 	switch(col.columnType) {
@@ -143,8 +143,8 @@ function mapObjectColumnToYaml(tableName: string, col: any, decimalLookup: Colum
 			ret[CUSTOM_ATTR_GENERAL_TYPE] = "datetime";
 			break;
 		case "NUMBER":
-			if (decimalLookup[tableName] && decimalLookup[tableName][col.columnName]) ret[CUSTOM_ATTR_GENERAL_TYPE] = "double";
-			else ret[CUSTOM_ATTR_GENERAL_TYPE] = "int";
+			if (integerLookup[tableName] && integerLookup[tableName][col.columnName]) ret[CUSTOM_ATTR_GENERAL_TYPE] = "int";
+			else ret[CUSTOM_ATTR_GENERAL_TYPE] = "double";
 			break;
 		default:
 			exit(`Unmapped data type ${col.columnType} found for ${tableName}.${col.columnName}`);
@@ -185,7 +185,7 @@ function removeCustomAttrs(input: any) {
 	} else return input;
 }
 
-export default function(tables: Table[], nameOverrides: {[K: string]: string}, decimalLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) {
+export default function(tables: Table[], nameOverrides: {[K: string]: string}, integerLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) {
 	console.log(nonNullLookup)
 	const tableLookup = tables.reduce((agg, t) => {
 		const mappedTableName = nameOverrides[t.tableName]
@@ -194,7 +194,7 @@ export default function(tables: Table[], nameOverrides: {[K: string]: string}, d
 		return agg;
 	}, {} as TableLookup);
 
-	const paths = scanDirectory("", tableLookup, decimalLookup, booleanLookup, nonNullLookup).flatMap(d => d.files).reduce((agg ,e) => {
+	const paths = scanDirectory("", tableLookup, integerLookup, booleanLookup, nonNullLookup).flatMap(d => d.files).reduce((agg ,e) => {
 		agg[e.path] = e;
 		delete agg[e.path].path;
 		return agg;

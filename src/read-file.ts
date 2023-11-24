@@ -33,7 +33,7 @@ export const readPKs = () => {
 	})
 }
 
-export const readDecimals = () => {
+export const readIntegers = () => {
 	return new Promise<Column[]>((resolve, reject) => {
 		const parser = parse({delimiter: ','}, function(err, data){
 			resolve(data.map(row => ({
@@ -42,7 +42,20 @@ export const readDecimals = () => {
 			})))
 		});
 		
-		fs.createReadStream('data/decimal-cols.csv').pipe(parser);
+		fs.createReadStream('data/int-cols.csv').pipe(parser);
+	})
+}
+
+export const readLocalDates = () => {
+	return new Promise<Column[]>((resolve, reject) => {
+		const parser = parse({delimiter: ','}, function(err, data){
+			resolve(data.map(row => ({
+				tableName: row[0],
+				columnName: row[1]
+			})))
+		});
+		
+		fs.createReadStream('data/local-date-columns.csv').pipe(parser);
 	})
 }
 

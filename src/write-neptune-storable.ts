@@ -1,13 +1,23 @@
-import { BooleanLookup, ColumnLookup, Reference, Table } from './index'
+import { BooleanLookup, Column, ColumnLookup, Reference, Table } from './index'
 import {fromUpperSnake, toCamelCaseLeadCap, toCamelCase, depluralize} from "./format"
-import {dateOnly, nullableInDb, typeOverrides} from "./overrides"
+import {nullableInDb, typeOverrides} from "./overrides"
 
 const INDENT = '\t'
 const NL = '\n'
 
 const ind = (n: number) => n > 0 ? INDENT + ind(n-1) : "";
 
-const getFieldType = (tableName: string, fieldName: string, fieldType: string, isField: boolean, fieldSize: number, decimalLookup: ColumnLookup, booleanLookup: BooleanLookup, nonNullLookup: BooleanLookup) => {
+const getFieldType = (
+	tableName: string, 
+	fieldName: string,
+	fieldType: string,
+	isField: boolean,
+	fieldSize: number,
+	integerLookup: ColumnLookup,
+	booleanLookup: BooleanLookup,
+	nonNullLookup: BooleanLookup,
+	localDateLookup: ColumnLookup
+) => {
 	const override = typeOverrides[tableName] && typeOverrides[tableName][fieldName];
 	if (override) return override;
 
@@ -21,11 +31,11 @@ const getFieldType = (tableName: string, fieldName: string, fieldType: string, i
 	case "CLOB":
 		return isField ? "StringDatabaseField" : "StringFieldValue";
 	case "DATE":
-		if (dateOnly[tableName] && dateOnly[tableName][fieldName]) return isField ? "DateDatabaseField" : "DateFieldValue"
+		if (localDateLookup[tableName] && localDateLookup[tableName][fieldName]) return isField ? "DateDatabaseField" : "DateFieldValue"
 		else return isField ? "DateTimeDatabaseField" : "DateTimeFieldValue"
 	case "NUMBER":
 	case "LONG":
-		if (fieldName.endsWith("ID")) return isField ? "IntDatabaseField" : "IntFieldValue"
+		if (fieldName.endsWith("ID") || (integerLookup[tableName] && integerLookup[tableName][fieldName])) return isField ? "IntDatabaseField" : "IntFieldValue"
 		return isField ? "DoubleDatabaseField" : "DoubleFieldValue"
 	default:
 		console.log("Unmapped field type " + fieldType)
@@ -47,10 +57,11 @@ export default (
 	{tableName, rows}: Table,
 	pk: string,
 	nameOverrides: {[K: string]: string},
-	decimalLookup: ColumnLookup,
+	integerLookup: ColumnLookup,
 	booleanLookup: BooleanLookup,
 	nonNullLookup: BooleanLookup,
-	references: Reference[]
+	references: Reference[],
+	localDateLookup: ColumnLookup
 ) => {
 	let out = "";
 
@@ -85,7 +96,7 @@ export default (
 		const nullableAnnotation = nullableAnnotations[i];
 		const isBoolean = (booleanLookup[tableName] && undefined != booleanLookup[tableName][row.columnName])
 		const nullImpliesFalse = isBoolean && true === booleanLookup[tableName][row.columnName]
-		const fieldClass = (nullable && !nullableAnnotation && !nullImpliesFalse ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, false, row.columnSize, decimalLookup, booleanLookup, nonNullLookup)
+		const fieldClass = (nullable && !nullableAnnotation && !nullImpliesFalse ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, false, row.columnSize, integerLookup, booleanLookup, nonNullLookup, localDateLookup)
 		out += ind(2) + `val ${fieldName} = new ${fieldClass}(self, ${className}.fields.${fieldName})` + NL
 	})
 	out += ind(1) + "}" + NL
@@ -117,7 +128,7 @@ export default (
 				row.columnType == "CHAR" && !isBoolean
 			)
 		)
-		const fieldClass = (nullable && !nullableAnnotation && !nullImpliesFalse ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, true, row.columnSize, decimalLookup, booleanLookup, nonNullLookup)
+		const fieldClass = (nullable && !nullableAnnotation && !nullImpliesFalse ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, true, row.columnSize, integerLookup, booleanLookup, nonNullLookup, localDateLookup)
 		const size = (function() {
 			if (hasLength) return `, ${row.columnSize}`;
 			else if (row.columnType == "CLOB") return `, -1`

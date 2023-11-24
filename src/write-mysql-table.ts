@@ -3,7 +3,7 @@ import { ColumnLookup, Table } from "index";
 function mapDataType(oracleType: string, length: number) {
 	switch (oracleType) {
 		case "NUMBER":
-			return "INT"
+			return "DECIMAL(8,2)"
 		case "VARCHAR2":
 			return `VARCHAR(${length})`
 		case "DATE":
@@ -25,7 +25,7 @@ const compositePrimaryKeys = {
 	"SIGNOUT_SNAPSHOTS": "SNAPSHOT_DATETIME, PROGRAM_ID, BOAT_ID"
 }
 
-export default ({tableName, rows}: Table, pk: string, decimals: ColumnLookup) => {
+export default ({tableName, rows}: Table, pk: string, integerLookup: ColumnLookup) => {
 	let out = "";
 
 	out += "create table " + tableName + " (\n"
@@ -39,7 +39,7 @@ export default ({tableName, rows}: Table, pk: string, decimals: ColumnLookup) =>
 
 
 		const isPk = row.columnName == pk
-		const isDecimal = decimals[tableName] && decimals[tableName][row.columnName];
+		const isInteger = integerLookup[tableName] && integerLookup[tableName][row.columnName];
 		const miscOverride = {
 			"PERSONS:ALLERGIES": "TEXT",
 			"PERSONS:MEDICATIONS": "TEXT",
@@ -56,7 +56,7 @@ export default ({tableName, rows}: Table, pk: string, decimals: ColumnLookup) =>
 			
 			if (override != undefined) return override;
 		//	else if (isPk) return "INT";
-			else if (isDecimal) return "DECIMAL(8,2)";
+			else if (isInteger) return "INT";
 			else return mapDataType(row.columnType, row.columnSize)
 		}()) 
 		const autoIncrement = (isPk && !compositePk && override == undefined && dataType == "INT") ? "AUTO_INCREMENT" : "";

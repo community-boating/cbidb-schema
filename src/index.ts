@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import {readBooleans, readColumns, readDecimals, readNonNullOverrides, readPKs, readReferences, readTableNameOverrides} from './read-file'
+import {readBooleans, readColumns, readIntegers, readLocalDates, readNonNullOverrides, readPKs, readReferences, readTableNameOverrides} from './read-file'
 import writeStorable from './write-neptune-storable'
 import writeDto from './write-dto'
 import {fromUpperSnake, toCamelCaseLeadCap, depluralize} from "./format"
@@ -74,9 +74,15 @@ function build() {
 	mkdirp.sync("out/api/typescript");
 	mkdirp.sync("out/api/scala");
 
-	Promise.all([readColumns(), readPKs(), readDecimals(), readBooleans(), readTableNameOverrides(), readNonNullOverrides(), readReferences()])
-	.then(([columns, pks, decimals, booleans, nameOverrides, nonNullOverrides, references]) => {
-		const decimalLookup = decimals.reduce((hash, {tableName, columnName}) => {
+	Promise.all([readColumns(), readPKs(), readIntegers(), readBooleans(), readTableNameOverrides(), readNonNullOverrides(), readReferences(), readLocalDates()])
+	.then(([columns, pks, integers, booleans, nameOverrides, nonNullOverrides, references, localDates]) => {
+		const integerLookup = integers.reduce((hash, {tableName, columnName}) => {
+			hash[tableName] = hash[tableName] || {};
+			hash[tableName][columnName] = true;
+			return hash;
+		}, {} as ColumnLookup)
+
+		const localDateLookup = localDates.reduce((hash, {tableName, columnName}) => {
 			hash[tableName] = hash[tableName] || {};
 			hash[tableName][columnName] = true;
 			return hash;
@@ -112,12 +118,12 @@ function build() {
 			const pk = pkRecord && pkRecord.columnName
 			const dtoFileName = "Put" + toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName))) + "Dto"
 			const entityFileName = toCamelCaseLeadCap(fromUpperSnake(depluralize(table.tableName)))
-			fs.writeFileSync(`out/entities/${mappedTableName || entityFileName}.scala`, writeStorable(table, pk, nameOverrides, decimalLookup, booleanLookup, nonNullLookup, references));
+			fs.writeFileSync(`out/entities/${mappedTableName || entityFileName}.scala`, writeStorable(table, pk, nameOverrides, integerLookup, booleanLookup, nonNullLookup, references, localDateLookup));
 			fs.writeFileSync(`out/dtos/${dtoFileName}.scala`, writeDto(table, pk));
-			fs.appendFileSync(`out/ddl/mysql-ddl.sql`, writeMysqlTable(table, pk, decimalLookup));
+			fs.appendFileSync(`out/ddl/mysql-ddl.sql`, writeMysqlTable(table, pk, integerLookup));
 		});
 	
-		const {oasPure, oasDecorated} = processApiSpecs(tables, nameOverrides, decimalLookup, booleanLookup, nonNullLookup);
+		const {oasPure, oasDecorated} = processApiSpecs(tables, nameOverrides, integerLookup, booleanLookup, nonNullLookup);
 
 		console.log(YAML.stringify(oasDecorated))
 
