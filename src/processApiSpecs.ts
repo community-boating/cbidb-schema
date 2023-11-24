@@ -143,7 +143,7 @@ function mapObjectColumnToYaml(tableName: string, col: any, integerLookup: Colum
 			ret[CUSTOM_ATTR_GENERAL_TYPE] = "datetime";
 			break;
 		case "NUMBER":
-			if (integerLookup[tableName] && integerLookup[tableName][col.columnName]) ret[CUSTOM_ATTR_GENERAL_TYPE] = "int";
+			if (col.columnName.toLowerCase().endsWith("id") || (integerLookup[tableName] && integerLookup[tableName][col.columnName])) ret[CUSTOM_ATTR_GENERAL_TYPE] = "int";
 			else ret[CUSTOM_ATTR_GENERAL_TYPE] = "double";
 			break;
 		default:

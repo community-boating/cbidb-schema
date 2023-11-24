@@ -35,7 +35,7 @@ const getFieldType = (
 		else return isField ? "DateTimeDatabaseField" : "DateTimeFieldValue"
 	case "NUMBER":
 	case "LONG":
-		if (fieldName.endsWith("ID") || (integerLookup[tableName] && integerLookup[tableName][fieldName])) return isField ? "IntDatabaseField" : "IntFieldValue"
+		if (fieldName.toLowerCase().endsWith("id") || (integerLookup[tableName] && integerLookup[tableName][fieldName])) return isField ? "IntDatabaseField" : "IntFieldValue"
 		return isField ? "DoubleDatabaseField" : "DoubleFieldValue"
 	default:
 		console.log("Unmapped field type " + fieldType)
