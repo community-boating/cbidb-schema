@@ -40,11 +40,11 @@
 "PERSONS_TAGS","tag","TAGS",
 "RATINGS","boats","BOATS_RATINGS","IndexedSeq"
 "RATINGS","programs","RATINGS_PROGRAMS","IndexedSeq"
-"PERSONS","personRatings","PersonRating","IndexedSeq"
+"PERSONS","personRatings","PERSONS_RATINGS","IndexedSeq"
 "SIGNOUT_CREW","person","PERSONS",
 "SIGNOUTS","skipper","PERSON",
 "SIGNOUTS","crew","SIGNOUT_CREW","List"
-"SIGNOUTS","tests","SIGNOUTS_TEST","IndexedSeq"
+"SIGNOUTS","tests","SIGNOUTS_TESTS","IndexedSeq"
 "SIGNOUTS_TESTS","signout","SIGNOUTS",
 "SIGNOUTS_TESTS","person","PERSONS",
 "USERS","extraRoles","UserRole","List"

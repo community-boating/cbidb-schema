@@ -18,15 +18,18 @@ const getFieldType = (tableName: string, fieldName: string, fieldType: string, i
 			return isField ? "BooleanDatabaseField" : "BooleanFieldValue"
 		} // else fall through to varchar/string
 	case "VARCHAR2":
+	case "CLOB":
 		return isField ? "StringDatabaseField" : "StringFieldValue";
 	case "DATE":
 		if (dateOnly[tableName] && dateOnly[tableName][fieldName]) return isField ? "DateDatabaseField" : "DateFieldValue"
 		else return isField ? "DateTimeDatabaseField" : "DateTimeFieldValue"
 	case "NUMBER":
+	case "LONG":
 		if (fieldName.endsWith("ID")) return isField ? "IntDatabaseField" : "IntFieldValue"
 		return isField ? "DoubleDatabaseField" : "DoubleFieldValue"
 	default:
-		return "UnknownFieldType";
+		console.log("Unmapped field type " + fieldType)
+		process.exit(1)
 	}
 }
 
@@ -115,7 +118,11 @@ export default (
 			)
 		)
 		const fieldClass = (nullable && !nullableAnnotation && !nullImpliesFalse ? "Nullable" : "") + getFieldType(row.tableName, row.columnName, row.columnType, true, row.columnSize, decimalLookup, booleanLookup, nonNullLookup)
-		const size = (hasLength ? `, ${row.columnSize}` : "");
+		const size = (function() {
+			if (hasLength) return `, ${row.columnSize}`;
+			else if (row.columnType == "CLOB") return `, -1`
+			else return "";
+		}());
 		out += ind(2) + `val ${fieldName} = new ${fieldClass}(self, "${row.columnName}"${size}${booleanSuffix})` + NL
 	})
 	out += ind(1) + "}" + NL

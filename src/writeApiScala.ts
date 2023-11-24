@@ -105,7 +105,7 @@ function getFieldType(fieldName: string, fieldSchema: any, subClasses: any, base
 	// console.log(fieldSchema)
 	switch (fieldSchema.type) {
 		case "number":
-			if (fieldSchema.$$generalType == "double") return "Double"
+			if (fieldSchema.$$generalType == "double" || fieldSchema.format == "double") return "Double"
 			else return "Int"
 		case "boolean":
 			return "Boolean"
