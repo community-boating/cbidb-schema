@@ -89,7 +89,13 @@ export default (
 		referencesThisTable.forEach(r => {
 			const referencedTableName = nameOverrides[r.referencedTableName] || toCamelCaseLeadCap(fromUpperSnake(depluralize(r.referencedTableName)))
 			const type = r.type ? `${r.type}[${referencedTableName}]` : referencedTableName
-			out += ind(2) + `val ${r.variableName} = new Initializable[${type}]` + NL
+			const isSeq = r.type == "List" || r.type == "IndexedSeq"
+			if (isSeq) {
+				out += ind(2) + `val ${r.variableName} = new InitializableSeq[${referencedTableName}, ${r.type}[${referencedTableName}]]` + NL
+			} else {
+				out += ind(2) + `val ${r.variableName} = new Initializable[${type}]` + NL
+			}
+			
 		})
 		out += ind(1) + "}" + NL + NL;
 	}
