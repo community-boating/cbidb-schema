@@ -51,7 +51,7 @@ function writeFile(apiPath: string, method: string, spec) {
 	sb.appendLine(` * Do not manually alter this file, or your changes will be lost`);
 	sb.appendLine(` * !!!!!!!!!!!!`);
 	sb.appendLine(` */`);
-	sb.appendLine(printScalaClass(successResponseSchemaToUse, baseClassName + "ResponseSuccessDto", apiPath))
+	sb.appendLine(printScalaClass(successResponseSchemaToUse, "Dto" + baseClassName + "ResponseSuccess", apiPath))
 
 	const requestSchema = spec.requestBody?.content["application/json"]?.schema
 
@@ -62,7 +62,7 @@ function writeFile(apiPath: string, method: string, spec) {
 			: requestSchema
 		)
 		sb.appendLine()
-		sb.appendLine(printScalaClass(requestSchemaToUse, baseClassName + "RequestDto", apiPath))
+		sb.appendLine(printScalaClass(requestSchemaToUse, "Dto" + baseClassName + "Request", apiPath))
 	}
 
 	fs.writeFileSync(path.join(CONTAINER_PATH, packageName.replaceAll(".","/"), firstLetterUppercase(method)+".scala"), sb.toString());

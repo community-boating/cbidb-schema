@@ -46,6 +46,16 @@ function performStorableSubstitutions(yaml: object, tableLookup: TableLookup, in
 		// e.g. get/post
 		return {
 			...methodObject,
+			requestBody: methodObject.requestBody && {
+				...methodObject.requestBody,
+				content: mapObjectProps(methodObject.requestBody.content, contentObject => {
+					// e.g. application/json
+					return {
+						...contentObject,
+						schema: processSchema(tableLookup, integerLookup, booleanLookup, nonNullLookup)(contentObject.schema)
+					}
+				})
+			},
 			responses: mapObjectProps(methodObject.responses, responseObject => {
 				// e.g. 200
 				return {

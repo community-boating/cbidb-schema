@@ -1,0 +1,43 @@
+get:
+  summary: "Fetch all class instructors"
+  tags:
+  - Staff - Rest
+  responses:
+    "200":
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $$$objectRef:
+                object: ClassInstructor
+                fieldSet:
+                  - instructorId
+                  - nameFirst
+                  - nameLast
+post:
+  summary: "Add/edit class instructor"
+  tags:
+  - Staff - Rest
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $$$objectRef:
+            object: ClassInstructor
+            fieldSet:
+              - instructorId
+              - nameFirst
+              - nameLast
+  responses:
+    "200":
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            $$$objectRef:
+              object: ClassInstructor
+              fieldSet:
+                - instructorId
