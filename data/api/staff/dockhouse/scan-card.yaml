@@ -88,7 +88,6 @@ get:
                       type: string
                     sequence:
                       type: number
-                      format: double
               jpClassSignupsToday:
                 type: array
                 items:
