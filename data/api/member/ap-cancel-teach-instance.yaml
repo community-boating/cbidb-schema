@@ -1,5 +1,7 @@
 post:
   summary: "Member: Attempt to cancel as instructor of an AP instance"
+  tags:
+  - Portal - Volunteer
   requestBody:
     required: true
     content:

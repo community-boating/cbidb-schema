@@ -1,5 +1,7 @@
 post:
   summary: "Attempt to create a signout"
+  tags:
+  - Dockhouse
   requestBody:
     required: true
     content:

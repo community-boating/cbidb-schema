@@ -1,5 +1,7 @@
 get:
   summary: "Scan a card to fetch person info"
+  tags:
+  - Dockhouse
   parameters:
     - in: query
       name: cardNumber

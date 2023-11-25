@@ -1,5 +1,7 @@
 get:
   summary: "Get this season's AP class instances and sessions"
+  tags:
+  - Staff - Rest
   responses:
     "200":
       description: "Success"

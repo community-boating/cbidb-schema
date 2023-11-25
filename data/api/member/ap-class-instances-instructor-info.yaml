@@ -1,5 +1,7 @@
 get:
   summary: "Get info per ap class instance, intended for volunteer instructors"
+  tags:
+  - Portal - Volunteer
   responses:
     "200":
       description: "Success"

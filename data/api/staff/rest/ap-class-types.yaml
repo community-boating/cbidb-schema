@@ -1,5 +1,7 @@
 get:
   summary: "Get all AP class types and formats (all time)"
+  tags:
+  - Staff - Rest
   responses:
     "200":
       description: "Success"

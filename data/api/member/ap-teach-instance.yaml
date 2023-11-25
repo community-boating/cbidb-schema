@@ -1,5 +1,7 @@
 post:
   summary: "Member: Attempt to signup to teach AP class instance"
+  tags:
+  - Portal - Volunteer
   requestBody:
     required: true
     content:

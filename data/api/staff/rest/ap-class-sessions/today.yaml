@@ -1,5 +1,7 @@
 get:
   summary: "Get today's AP class sessions and signups"
+  tags:
+  - Staff - Rest
   responses:
     "200":
       description: "Success"
