@@ -110,6 +110,8 @@ function getFieldType(fieldName: string, fieldSchema: any, subClasses: any, base
 		case "boolean":
 			return "Boolean"
 		case "string":
+			//if (fieldSchema.$$generalType == "datetime") return "LocalDateTime"
+			//else
 			return "String"
 		case "object":
 			const newClassName = baseClassName + "_" + fieldName

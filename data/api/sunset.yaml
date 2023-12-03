@@ -1,0 +1,37 @@
+get:
+  summary: "Get a month's worth of sunsets"
+  tags:
+  - Public
+  parameters:
+  - in: query
+    name: year
+    schema:
+      type: integer
+    required: true
+  - in: query
+    name: month
+    schema:
+      type: integer
+    required: true
+  responses:
+    "200":
+      description: "Success"
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $$$objectRef:
+                object: SunsetTime
+                fieldSet:
+                - forDate
+                - twilightStart
+                - sunrise
+                - sunset
+                - twilightEnd
+                - dayLengthSeconds
+                - sonarNoon
+                - nauticalTwilightStart
+                - nauticalTwilightEnd
+                - astronomicalTwilightStart
+                - astronomicalTwilightEnd
